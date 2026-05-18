@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { flushSync } from "react-dom";
 import { AuthProvider } from "./context/AuthProvider";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { useAuth } from "./hooks/useAuth";
@@ -139,6 +140,52 @@ const Header = ({ currentPage, setCurrentPage, onShowAuth }) => {
     { id: "report", label: "Reports", icon: <BarChart3 className="w-5 h-5" /> },
   ];
 
+  const handleThemeToggle = (e) => {
+    e.preventDefault();
+
+    if (!document.startViewTransition) {
+      toggleTheme();
+      return;
+    }
+
+    const x = e.clientX;
+    const y = e.clientY;
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    document.documentElement.classList.add("theme-transitioning");
+
+    const transition = document.startViewTransition(() => {
+      flushSync(() => {
+        toggleTheme();
+      });
+    });
+
+    transition.ready.then(() => {
+      const clipPath = [
+        `circle(0px at ${x}px ${y}px)`,
+        `circle(${endRadius}px at ${x}px ${y}px)`,
+      ];
+
+      const animation = document.documentElement.animate(
+        {
+          clipPath: clipPath,
+        },
+        {
+          duration: 700,
+          easing: "ease-in-out",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      );
+
+      animation.onfinish = () => {
+        document.documentElement.classList.remove("theme-transitioning");
+      };
+    });
+  };
+
   return (
     <header
       ref={headerRef}
@@ -189,11 +236,11 @@ const Header = ({ currentPage, setCurrentPage, onShowAuth }) => {
           <div className="flex items-center gap-3">
             {/* Theme toggle */}
             <button
-              onClick={toggleTheme}
-              className={`p-3 rounded-xl ${theme.bg.card} ${theme.text.secondary} hover:scale-110 transition-all duration-200 hover:rotate-180 border`}
+              onClick={handleThemeToggle}
+              className={`p-3 rounded-xl ${theme.bg.card} ${theme.text.secondary} hover:bg-violet-500/10 hover:text-violet-500 transition-colors duration-200 border border-white/10 shadow-md active:scale-95`}
               aria-label="Toggle theme"
             >
-              {isDark ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-violet-600" />}
+              {isDark ? <Sun className="w-5 h-5 text-amber-400 animate-spin-slow" /> : <Moon className="w-5 h-5 text-violet-600 animate-pulse" />}
             </button>
 
             {/* Mobile menu button */}
@@ -838,33 +885,36 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
           </div>
         )}
 
-        {/* Main Content Grid */}
+        {/* Main Content Grid - Top Row (Live Session & Real-Time Metrics) */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
           {/* Camera Preview */}
-          <div className="xl:col-span-8">
+          <div className="xl:col-span-8 flex flex-col">
             <div
-              className={`${theme.bg.secondary} rounded-3xl p-6 lg:p-8 h-full border`}
+              className={`${theme.bg.secondary} rounded-3xl p-6 lg:p-8 border relative group flex-1 flex flex-col justify-between shadow-xl`}
             >
+              <div className="absolute -inset-px bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-cyan-600/10 rounded-3xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
               <div className="flex items-center justify-between mb-6">
                 <h2
                   className={`text-xl lg:text-2xl font-bold ${theme.text.primary} flex items-center gap-3`}
                 >
-                  <Video className="w-6 h-6 text-violet-500" />
+                  <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shadow-inner">
+                    <Video className="w-5 h-5 text-violet-400 animate-pulse" />
+                  </div>
                   <span>Live Camera Feed</span>
                 </h2>
                 <div className="flex gap-3">
                   <button
                     onClick={isRunning ? stopEvaluation : startEvaluation}
                     disabled={evaluationStatus === "processing_video"}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${
                       isRunning
-                        ? "bg-gradient-to-r from-rose-500 to-rose-600 text-white hover:from-rose-400 hover:to-rose-500"
-                        : "bg-gradient-to-r from-violet-600 to-purple-700 text-white hover:from-violet-500 hover:to-purple-600"
+                        ? "bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 text-white hover:from-rose-400 hover:to-rose-500 shadow-rose-500/25"
+                        : "bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white hover:from-violet-500 hover:to-purple-500 shadow-violet-500/25"
                     }`}
                   >
                     {isRunning ? (
                       <>
-                        <Square className="w-5 h-5 fill-current" />
+                        <Square className="w-5 h-5 fill-current animate-pulse" />
                         <span>Stop Recording</span>
                       </>
                     ) : (
@@ -877,18 +927,24 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
                 </div>
               </div>
 
-              <div className="relative w-full aspect-video bg-gradient-to-br from-gray-900/40 to-gray-800/40 rounded-2xl overflow-hidden border-2 border-dashed border-gray-500/20 shadow-inner">
+              <div className="relative w-full aspect-video bg-gradient-to-b from-[#16161a] to-[#101012] rounded-2xl overflow-hidden border border-white/10 shadow-2xl group/cam my-auto">
+                <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
                 {cameraPermission === "denied" ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
-                    <VideoOff className={`w-16 h-16 ${theme.text.muted} opacity-50`} />
-                    <div
-                      className={`${theme.text.secondary} text-lg font-medium text-center px-4`}
-                    >
-                      Camera access denied
+                  <div className="absolute inset-0 flex flex-col items-center justify-center space-y-5 bg-black/40 backdrop-blur-md">
+                    <div className="w-20 h-20 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shadow-2xl animate-bounce">
+                      <VideoOff className="w-10 h-10 text-rose-400" />
+                    </div>
+                    <div className="text-center space-y-1 px-4">
+                      <div className="text-white text-xl font-bold tracking-wide">
+                        Camera Access Required
+                      </div>
+                      <div className={`${theme.text.muted} text-sm max-w-sm mx-auto`}>
+                        Please allow camera permissions in your browser to enable real-time AI presentation analysis.
+                      </div>
                     </div>
                     <button
                       onClick={requestCameraAccess}
-                      className="px-5 py-2.5 bg-violet-600 text-white rounded-xl font-medium hover:bg-violet-700 transition-colors shadow-lg"
+                      className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold hover:from-violet-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-violet-500/25 hover:scale-105 active:scale-95"
                     >
                       Request Camera Access
                     </button>
@@ -900,10 +956,10 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
                       autoPlay
                       playsInline
                       muted
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover shadow-inner"
                     />
                     <img
-                      className="absolute top-2 right-2 w-32 h-24 object-cover rounded-xl border-2 border-white shadow-xl"
+                      className="absolute top-4 right-4 w-36 h-28 object-cover rounded-xl border-2 border-white/80 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105"
                       src={`/video_feed/${getUserIdentifier()}?ts=${Date.now()}`}
                       alt="Backend processed feed"
                       style={{ display: "none" }}
@@ -916,51 +972,68 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
                       autoPlay
                       playsInline
                       muted
-                      className="w-full h-full object-cover opacity-40"
+                      className="w-full h-full object-cover opacity-30 filter blur-[2px]"
                     />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-black/40 backdrop-blur-sm">
-                      <Video className={`w-16 h-16 ${theme.text.muted} opacity-60`} />
-                      <div
-                        className={`${theme.text.secondary} text-lg font-medium`}
-                      >
-                        Click Start Recording to begin analysis
+                    <div className="absolute inset-0 flex flex-col items-center justify-center space-y-5 bg-black/60 backdrop-blur-md">
+                      <div className="w-20 h-20 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shadow-2xl group-hover/cam:scale-110 transition-transform duration-500">
+                        <Video className="w-10 h-10 text-violet-400 animate-pulse" />
+                      </div>
+                      <div className="text-center space-y-2 px-4 max-w-md">
+                        <div className="text-white text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-violet-200 to-cyan-200 bg-clip-text text-transparent">
+                          Ready for Your Presentation
+                        </div>
+                        <div className={`${theme.text.secondary} text-sm leading-relaxed`}>
+                          Click <span className="text-violet-400 font-semibold">Start Recording</span> above to begin real-time emotion detection, pitch tracking, and pacing analysis.
+                        </div>
                       </div>
                     </div>
                   </>
                 ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
-                    <Loader2 className="w-12 h-12 text-violet-500 animate-spin" />
-                    <div
-                      className={`${theme.text.secondary} text-lg font-medium`}
-                    >
-                      Requesting camera access...
+                  <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-black/40 backdrop-blur-md">
+                    <Loader2 className="w-12 h-12 text-violet-400 animate-spin" />
+                    <div className="text-white text-lg font-medium tracking-wide animate-pulse">
+                      Initializing AI Camera Engine...
                     </div>
                   </div>
                 )}
 
                 {/* Live indicator */}
                 {isRunning && cameraPermission === "granted" && (
-                  <div className="absolute top-4 right-4 flex items-center gap-2 bg-rose-500 text-white px-3 py-1.5 rounded-lg font-medium shadow-lg animate-pulse">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    <span className="text-sm tracking-wider font-bold">LIVE</span>
+                  <div className="absolute top-4 left-4 flex items-center gap-2.5 bg-gradient-to-r from-rose-500 to-red-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg shadow-rose-500/30 animate-pulse border border-white/20 backdrop-blur-md">
+                    <div className="w-2.5 h-2.5 bg-white rounded-full animate-ping" />
+                    <span className="text-xs tracking-widest uppercase font-extrabold">LIVE SESSION</span>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Sidebar - Controls and Metrics */}
-          <div className="xl:col-span-4 space-y-6">
-            <MetricsPanel metrics={metrics} theme={theme} />
-            <QuickActionsPanel setCurrentPage={setCurrentPage} theme={theme} />
-            <FileUploadPanel
-              selectedFile={selectedFile}
-              setSelectedFile={setSelectedFile}
-              handleFileUpload={handleFileUpload}
-              evaluationStatus={evaluationStatus}
-              isRunning={isRunning}
-              theme={theme}
-            />
+          {/* Real-Time Metrics Panel */}
+          <div className="xl:col-span-4 flex flex-col">
+            <div className="flex-1">
+              <MetricsPanel metrics={metrics} theme={theme} />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Row - Quick Actions & Asynchronous Analysis Upload */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mt-8">
+          <div className="xl:col-span-5 flex flex-col">
+            <div className="flex-1">
+              <QuickActionsPanel setCurrentPage={setCurrentPage} theme={theme} />
+            </div>
+          </div>
+          <div className="xl:col-span-7 flex flex-col">
+            <div className="flex-1">
+              <FileUploadPanel
+                selectedFile={selectedFile}
+                setSelectedFile={setSelectedFile}
+                handleFileUpload={handleFileUpload}
+                evaluationStatus={evaluationStatus}
+                isRunning={isRunning}
+                theme={theme}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -972,57 +1045,69 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
 const MetricsPanel = ({ metrics, theme }) => {
   const metricsData = [
     {
-      label: "Expression",
+      label: "Facial Expression",
       value: metrics.expression,
-      icon: <Smile className="w-5 h-5 text-white" />,
-      color: "from-blue-500 to-cyan-600",
+      icon: <Smile className="w-6 h-6 text-cyan-400" />,
+      color: "from-blue-500/10 to-cyan-500/10",
+      borderColor: "border-cyan-500/30",
     },
     {
-      label: "Pitch (Hz)",
-      value: metrics.pitch,
-      icon: <Mic className="w-5 h-5 text-white" />,
-      color: "from-purple-500 to-pink-600",
+      label: "Acoustic Pitch",
+      value: `${metrics.pitch} Hz`,
+      icon: <Mic className="w-6 h-6 text-purple-400" />,
+      color: "from-purple-500/10 to-pink-500/10",
+      borderColor: "border-purple-500/30",
     },
     {
-      label: "Confidence",
+      label: "Overall Confidence",
       value: `${metrics.confidence}%`,
-      icon: <BarChart3 className="w-5 h-5 text-white" />,
-      color: "from-emerald-500 to-teal-600",
+      icon: <BarChart3 className="w-6 h-6 text-emerald-400" />,
+      color: "from-emerald-500/10 to-teal-500/10",
+      borderColor: "border-emerald-500/40",
       highlight: true,
     },
   ];
 
   return (
-    <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
-      <h3
-        className={`text-xl font-bold ${theme.text.primary} mb-6 flex items-center gap-3`}
-      >
-        <Activity className="w-6 h-6 text-violet-500" />
-        <span>Live Metrics</span>
-      </h3>
+    <div className={`${theme.bg.secondary} rounded-3xl p-6 border relative group`}>
+      <div className="absolute -inset-px bg-gradient-to-b from-violet-500/5 to-transparent rounded-3xl blur-lg opacity-50 pointer-events-none" />
+      <div className="flex items-center justify-between mb-6">
+        <h3 className={`text-xl font-extrabold ${theme.text.primary} flex items-center gap-3`}>
+          <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+            <Activity className="w-5 h-5 text-violet-400 animate-pulse" />
+          </div>
+          <span>Live Metrics</span>
+        </h3>
+        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">AI Active</span>
+        </div>
+      </div>
       <div className="space-y-4">
         {metricsData.map((metric, index) => (
           <div
             key={index}
-            className={`${theme.bg.card} rounded-2xl p-4 border ${
-              metric.highlight ? "border-emerald-500/30 bg-emerald-500/5" : "border-white/5"
-            } hover:scale-105 transition-all duration-200 shadow-sm`}
+            className={`rounded-2xl p-5 border ${metric.borderColor} ${
+              metric.highlight 
+                ? "bg-gradient-to-br from-emerald-500/[0.08] to-teal-500/[0.02] shadow-lg shadow-emerald-500/5" 
+                : "bg-gradient-to-br from-white/[0.06] to-white/[0.02]"
+            } backdrop-blur-xl hover:scale-[1.02] transition-all duration-300 shadow-sm group/card`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3.5">
                 <div
-                  className={`w-10 h-10 bg-gradient-to-br ${metric.color} rounded-xl flex items-center justify-center shadow-md`}
+                  className={`w-12 h-12 bg-gradient-to-br ${metric.color} border ${metric.borderColor} rounded-xl flex items-center justify-center shadow-inner group-hover/card:scale-110 transition-transform duration-300`}
                 >
                   {metric.icon}
                 </div>
-                <span className={`${theme.text.secondary} text-sm font-medium`}>
+                <span className={`${theme.text.secondary} text-sm font-semibold tracking-wide`}>
                   {metric.label}
                 </span>
               </div>
             </div>
             <div
-              className={`text-3xl font-bold tracking-tight mt-1 ${
-                metric.highlight ? theme.status.success : theme.text.primary
+              className={`text-3xl font-black tracking-tight mt-1 ${
+                metric.highlight ? "bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent" : theme.text.primary
               }`}
             >
               {metric.value}
@@ -1037,26 +1122,48 @@ const MetricsPanel = ({ metrics, theme }) => {
 // Quick Actions Panel
 const QuickActionsPanel = ({ setCurrentPage, theme }) => {
   return (
-    <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
-      <h3 className={`text-xl font-bold ${theme.text.primary} mb-6 flex items-center gap-3`}>
-        <Sparkles className="w-6 h-6 text-violet-500" />
-        <span>Quick Actions</span>
-      </h3>
-      <div className="space-y-3">
-        <button
-          onClick={() => setCurrentPage("report")}
-          className={`w-full flex items-center gap-3 px-5 py-3.5 ${theme.bg.button} ${theme.text.primary} rounded-xl font-medium transition-all duration-200 hover:scale-105 border`}
-        >
-          <FileText className="w-5 h-5 text-violet-500" />
-          <span>View Latest Report</span>
-        </button>
-        <button
-          onClick={() => setCurrentPage("home")}
-          className={`w-full flex items-center gap-3 px-5 py-3.5 ${theme.bg.button} ${theme.text.primary} rounded-xl font-medium transition-all duration-200 hover:scale-105 border`}
-        >
-          <Home className="w-5 h-5 text-violet-500" />
-          <span>Back to Home</span>
-        </button>
+    <div className={`${theme.bg.secondary} rounded-3xl p-6 border relative group h-full flex flex-col justify-between shadow-xl`}>
+      <div>
+        <h3 className={`text-xl font-extrabold ${theme.text.primary} mb-6 flex items-center gap-3`}>
+          <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-violet-400" />
+          </div>
+          <span>Quick Actions</span>
+        </h3>
+        <div className="space-y-4">
+          <button
+            onClick={() => setCurrentPage("report")}
+            className={`w-full flex items-center justify-between p-4 bg-gradient-to-r from-white/[0.07] to-white/[0.02] hover:from-white/[0.12] hover:to-white/[0.05] border border-white/10 hover:border-violet-500/40 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-violet-500/10 group/btn`}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover/btn:bg-violet-500 group-hover/btn:text-white transition-colors duration-300 shadow-inner">
+                <FileText className="w-5 h-5" />
+              </div>
+              <span className={`${theme.text.primary} text-base`}>View Latest Report</span>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover/btn:translate-x-1 transition-transform duration-300">
+              <span className="text-violet-400 font-bold">→</span>
+            </div>
+          </button>
+          <button
+            onClick={() => setCurrentPage("home")}
+            className={`w-full flex items-center justify-between p-4 bg-gradient-to-r from-white/[0.07] to-white/[0.02] hover:from-white/[0.12] hover:to-white/[0.05] border border-white/10 hover:border-violet-500/40 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-violet-500/10 group/btn`}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover/btn:bg-violet-500 group-hover/btn:text-white transition-colors duration-300 shadow-inner">
+                <Home className="w-5 h-5" />
+              </div>
+              <span className={`${theme.text.primary} text-base`}>Back to Home</span>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover/btn:translate-x-1 transition-transform duration-300">
+              <span className="text-violet-400 font-bold">→</span>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div className="mt-6 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-gray-400">
+        <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> AI Engine Ready</span>
+        <span>v2.0 Modular</span>
       </div>
     </div>
   );
@@ -1071,23 +1178,93 @@ const FileUploadPanel = ({
   isRunning,
   theme,
 }) => {
-  return (
-    <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
-      <h3 className={`text-xl font-bold ${theme.text.primary} mb-4 flex items-center gap-3`}>
-        <UploadCloud className="w-6 h-6 text-violet-500" />
-        <span>Upload Analysis</span>
-      </h3>
-      <div className="space-y-4">
-        <div className="relative">
-          <input
-            type="file"
-            accept="video/*"
-            onChange={(e) => setSelectedFile(e.target.files[0])}
-            disabled={evaluationStatus === "processing_video" || isRunning}
-            className={`w-full ${theme.bg.input} ${theme.text.primary} border rounded-xl p-3 transition-all duration-200 disabled:opacity-50 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-violet-600 file:text-white file:font-medium hover:file:bg-violet-700 cursor-pointer`}
-          />
-        </div>
+  const fileInputRef = useRef(null);
 
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (evaluationStatus === "processing_video" || isRunning) return;
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("video/")) {
+        setSelectedFile(file);
+      }
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  return (
+    <div className={`${theme.bg.secondary} rounded-3xl p-6 border relative group h-full flex flex-col justify-between shadow-xl`}>
+      <div>
+        <h3 className={`text-xl font-extrabold ${theme.text.primary} mb-5 flex items-center gap-3`}>
+          <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+            <UploadCloud className="w-5 h-5 text-violet-400" />
+          </div>
+          <span>Upload Analysis</span>
+        </h3>
+        <div className="space-y-5">
+          {!selectedFile ? (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              className={`relative border-2 border-dashed border-white/15 hover:border-violet-500/50 bg-gradient-to-b from-white/[0.04] to-white/[0.01] hover:from-violet-500/[0.05] hover:to-transparent rounded-2xl p-7 transition-all duration-300 flex flex-col items-center justify-center gap-3 cursor-pointer group/drop shadow-inner ${
+                evaluationStatus === "processing_video" || isRunning ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/*"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+                disabled={evaluationStatus === "processing_video" || isRunning}
+                className="hidden"
+              />
+              <div className="w-14 h-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center group-hover/drop:scale-110 transition-transform duration-300 shadow-md">
+                <UploadCloud className="w-7 h-7 text-violet-400" />
+              </div>
+              <div className="text-center space-y-1">
+                <div className="text-white font-bold text-base tracking-wide group-hover/drop:text-violet-300 transition-colors">
+                  Click to upload or drag & drop
+                </div>
+                <div className={`${theme.text.muted} text-xs`}>
+                  MP4, MOV, AVI, MKV up to 500MB
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/30 rounded-2xl flex items-center justify-between backdrop-blur-xl shadow-lg">
+              <div className="flex items-center gap-3.5 overflow-hidden">
+                <div className="w-12 h-12 rounded-xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0 shadow-inner">
+                  <Video className="w-6 h-6 text-violet-300" />
+                </div>
+                <div className="overflow-hidden">
+                  <div className="text-white font-bold text-sm truncate tracking-wide">
+                    {selectedFile.name}
+                  </div>
+                  <div className={`${theme.text.accent} text-xs font-semibold mt-0.5`}>
+                    {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedFile(null);
+                }}
+                disabled={evaluationStatus === "processing_video" || isRunning}
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-rose-500/20 hover:text-rose-400 text-gray-400 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-4 mt-6">
         <button
           onClick={handleFileUpload}
           disabled={
@@ -1095,23 +1272,23 @@ const FileUploadPanel = ({
             evaluationStatus === "processing_video" ||
             isRunning
           }
-          className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+          className="w-full flex items-center justify-center gap-2.5 px-6 py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white rounded-2xl font-bold hover:from-violet-500 hover:to-purple-500 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:from-gray-800 disabled:to-gray-900 disabled:text-gray-400 disabled:border disabled:border-white/10 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-xl shadow-violet-500/25 tracking-wide"
         >
           {evaluationStatus === "processing_video" ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Processing Video...</span>
+              <span>Analyzing Video with AI...</span>
             </>
           ) : (
             <>
-              <UploadCloud className="w-5 h-5" />
-              <span>Analyze Video</span>
+              <UploadCloud className="w-5 h-5 animate-bounce" />
+              <span>Analyze Presentation Video</span>
             </>
           )}
         </button>
 
-        <p className={`${theme.text.muted} text-xs text-center leading-relaxed`}>
-          Upload a recorded presentation video for comprehensive asynchronous offline analysis.
+        <p className={`${theme.text.muted} text-xs text-center leading-relaxed px-2`}>
+          Upload a recorded presentation video for comprehensive asynchronous AI analysis across facial expressions, pitch, and speech pacing.
         </p>
       </div>
     </div>

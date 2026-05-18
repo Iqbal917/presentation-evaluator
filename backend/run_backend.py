@@ -81,9 +81,17 @@ def start_services():
         script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
     
+    # Determine correct python executable (use virtualenv if present)
+    venv_python = os.path.join(script_dir, '.venv', 'Scripts', 'python.exe') if sys.platform == 'win32' else os.path.join(script_dir, '.venv', 'bin', 'python')
+    python_exe = venv_python if os.path.exists(venv_python) else sys.executable
+    
+    # Determine correct celery executable (use virtualenv if present)
+    venv_celery = os.path.join(script_dir, '.venv', 'Scripts', 'celery.exe') if sys.platform == 'win32' else os.path.join(script_dir, '.venv', 'bin', 'celery')
+    celery_exe = venv_celery if os.path.exists(venv_celery) else 'celery'
+    
     # 1. Start Celery Worker
-    print("[Starting] Celery Worker...")
-    celery_cmd = ['celery', '-A', 'app.core.celery_app', 'worker', '--loglevel=info']
+    print(f"[Starting] Celery Worker using {celery_exe}...")
+    celery_cmd = [celery_exe, '-A', 'app.core.celery_app', 'worker', '--loglevel=info']
     if sys.platform == 'win32':
         # Windows requires --pool=solo for reliable celery execution
         celery_cmd.append('--pool=solo')
@@ -93,15 +101,15 @@ def start_services():
     time.sleep(2)
     
     # 2. Start Celery Beat
-    print("[Starting] Celery Beat Scheduler...")
-    beat_cmd = ['celery', '-A', 'app.core.celery_app', 'beat', '--loglevel=info']
+    print(f"[Starting] Celery Beat Scheduler using {celery_exe}...")
+    beat_cmd = [celery_exe, '-A', 'app.core.celery_app', 'beat', '--loglevel=info']
     beat_proc = subprocess.Popen(beat_cmd)
     child_processes.append(beat_proc)
     time.sleep(2)
     
     # 3. Start FastAPI Application
-    print("[Starting] FastAPI Application Server...")
-    app_proc = subprocess.Popen([sys.executable, '-m', 'app.main'])
+    print(f"[Starting] FastAPI Application Server using {python_exe}...")
+    app_proc = subprocess.Popen([python_exe, '-m', 'app.main'])
     child_processes.append(app_proc)
     
     print("=" * 60)

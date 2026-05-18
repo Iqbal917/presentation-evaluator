@@ -16,6 +16,19 @@
   animation-name: fade-in;
 }
 
+/* Expanding Circle Theme Transition */
+.theme-transitioning::view-transition-old(root),
+.theme-transitioning::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+.theme-transitioning::view-transition-old(root) {
+  z-index: 1;
+}
+.theme-transitioning::view-transition-new(root) {
+  z-index: 2;
+}
+
 @keyframes fade-out {
   from { opacity: 1; }
   to { opacity: 0; }
