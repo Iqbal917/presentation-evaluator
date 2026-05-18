@@ -46,33 +46,15 @@ REDIS_URL=redis://localhost:6379/0
 CELERY_BROKER_URL=redis://localhost:6379/2
 ```
 
-### 4. Modify Your evaluate_module.py
+### 4. Modular Package Structure (`app/`)
 
-Your existing `evaluate_module.py` needs these additional functions for multi-user support:
-
-```python
-# Add these functions to your evaluate_module.py:
-
-def run_user_evaluation(user_id: str, output_dir: str):
-    # Your existing run_evaluation() logic but with user-specific paths
-    pass
-
-def process_user_uploaded_video(user_id: str, video_path: str, output_dir: str):
-    # Your existing process_uploaded_video() logic but with user-specific paths
-    pass
-
-def get_user_latest_frame(user_id: str):
-    # Your existing get_latest_frame() logic but for specific user
-    pass
-
-def get_user_report_data(user_id: str):
-    # Your existing get_report_data() logic but from user-specific files
-    pass
-
-def stop_user_recording(user_id: str):
-    # Your existing stop_recording() logic but for specific user
-    pass
-```
+The backend is organized into a clean, modular package structure:
+- `app/api/endpoints/`: Route definitions for auth, evaluation, video, reporting, and system monitoring.
+- `app/core/`: Core singletons including `database.py`, `redis_client.py`, `celery_app.py`, `security.py`, and `limiter.py`.
+- `app/models/`: Pydantic data validation schemas.
+- `app/services/`: Core AI evaluation engine (`evaluate_module.py`).
+- `app/worker/`: Celery asynchronous background tasks (`tasks.py`).
+- `app/main.py`: FastAPI application entry point.
 
 ## Running the Application
 
@@ -83,15 +65,15 @@ redis-server
 
 # Terminal 2: Start Celery Worker
 cd backend
-celery -A celery_app worker --loglevel=info
+celery -A app.core.celery_app worker --loglevel=info
 
 # Terminal 3: Start Celery Beat (for scheduled tasks)
 cd backend
-celery -A celery_app beat --loglevel=info
+celery -A app.core.celery_app beat --loglevel=info
 
 # Terminal 4: Start FastAPI
 cd backend
-python app.py
+python -m app.main
 
 # Terminal 5: Start Frontend
 cd frontend
@@ -135,10 +117,10 @@ chmod +x start_services.sh
 ### Monitor Celery:
 ```bash
 # Check active tasks
-celery -A celery_app inspect active
+celery -A app.core.celery_app inspect active
 
 # Monitor in real-time
-celery -A celery_app events
+celery -A app.core.celery_app events
 ```
 
 ### Monitor Redis:

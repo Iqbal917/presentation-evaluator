@@ -1,7 +1,7 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../context/ThemeContext";
+import { User, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 
 const Register = ({ onSwitchToLogin, onClose }) => {
   const [formData, setFormData] = useState({
@@ -67,23 +67,24 @@ const Register = ({ onSwitchToLogin, onClose }) => {
   };
 
   return (
-    <div ref={formRef} className={`${theme.bg.secondary} rounded-3xl p-8 w-full max-w-md mx-auto shadow-2xl border backdrop-blur-lg`}>
+    <div ref={formRef} className={`${theme.bg.secondary} rounded-3xl p-8 w-full max-w-md mx-auto shadow-2xl border backdrop-blur-xl`}>
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg">
-          👤
+        <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-500/20 text-white">
+          <User className="w-8 h-8" />
         </div>
-        <h2 className={`text-2xl lg:text-3xl font-bold ${theme.text.primary} mb-2`}>
+        <h2 className={`text-2xl lg:text-3xl font-bold ${theme.text.primary} mb-2 tracking-tight`}>
           Create Account
         </h2>
-        <p className={`${theme.text.secondary}`}>
+        <p className={`${theme.text.secondary} text-sm`}>
           Join to access your presentation analytics
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-500 text-sm backdrop-blur-sm">
-            {error}
+          <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-rose-500 text-sm backdrop-blur-sm flex items-center gap-3 font-medium">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -91,73 +92,93 @@ const Register = ({ onSwitchToLogin, onClose }) => {
           <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
             Full Name (Optional)
           </label>
-          <input
-            type="text"
-            name="full_name"
-            value={formData.full_name}
-            onChange={handleChange}
-            className={`w-full px-4 py-4 ${theme.bg.input} border rounded-2xl ${theme.text.primary} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200`}
-            placeholder="Enter your full name"
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <User className="w-5 h-5" />
+            </div>
+            <input
+              type="text"
+              name="full_name"
+              value={formData.full_name}
+              onChange={handleChange}
+              className={`w-full pl-12 pr-4 py-4 ${theme.bg.input} border rounded-2xl ${theme.text.primary} placeholder-gray-400 transition-all duration-200`}
+              placeholder="Enter your full name"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
           <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
             Email Address *
           </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={`w-full px-4 py-4 ${theme.bg.input} border rounded-2xl ${theme.text.primary} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200`}
-            placeholder="Enter your email"
-            required
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <Mail className="w-5 h-5" />
+            </div>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`w-full pl-12 pr-4 py-4 ${theme.bg.input} border rounded-2xl ${theme.text.primary} placeholder-gray-400 transition-all duration-200`}
+              placeholder="Enter your email"
+              required
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
           <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
             Password *
           </label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className={`w-full px-4 py-4 ${theme.bg.input} border rounded-2xl ${theme.text.primary} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200`}
-            placeholder="Create a password"
-            required
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <Lock className="w-5 h-5" />
+            </div>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`w-full pl-12 pr-4 py-4 ${theme.bg.input} border rounded-2xl ${theme.text.primary} placeholder-gray-400 transition-all duration-200`}
+              placeholder="Create a password"
+              required
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
           <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
             Confirm Password *
           </label>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            className={`w-full px-4 py-4 ${theme.bg.input} border rounded-2xl ${theme.text.primary} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200`}
-            placeholder="Confirm your password"
-            required
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <Lock className="w-5 h-5" />
+            </div>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={`w-full pl-12 pr-4 py-4 ${theme.bg.input} border rounded-2xl ${theme.text.primary} placeholder-gray-400 transition-all duration-200`}
+              placeholder="Confirm your password"
+              required
+            />
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-violet-600 to-purple-700 text-white py-4 rounded-2xl font-semibold text-lg hover:from-violet-500 hover:to-purple-600 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-violet-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="w-full bg-gradient-to-r from-violet-600 to-purple-700 text-white py-4 rounded-2xl font-semibold text-lg hover:from-violet-500 hover:to-purple-600 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-violet-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
         >
           {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              Creating Account...
-            </span>
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Creating Account...</span>
+            </>
           ) : (
-            "Create Account"
+            <span>Create Account</span>
           )}
         </button>
       </form>
@@ -176,7 +197,7 @@ const Register = ({ onSwitchToLogin, onClose }) => {
 
       <div className="mt-4 text-center">
         <p className={`${theme.text.secondary} text-xs`}>
-          By creating an account, you get full access to all features
+          By creating an account, you get full access to all premium features
         </p>
       </div>
     </div>

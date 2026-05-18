@@ -1,0 +1,13 @@
+{
+  "name": "presentation-evaluator",
+  "version": "1.0.0",
+  "description": "Multi-User Presentation Evaluator & Analytics Platform",
+  "scripts": {
+    "dev:backend": "python backend/run_backend.py",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev": "npx concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

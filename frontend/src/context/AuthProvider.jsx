@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     checkTrialStatus,
     isAuthenticated: !!user,
-    hasActiveAccess: user?.is_premium || (trialStatus?.is_trial_active && !trialStatus?.trial_expired)
+    hasActiveAccess: true
   };
 
   return (

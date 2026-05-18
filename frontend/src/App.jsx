@@ -5,6 +5,12 @@ import { useAuth } from "./hooks/useAuth";
 import AuthModal from "./components/AuthModal";
 import TrialBanner from "./components/TrialBanner";
 import { api } from "./utils/api";
+import { 
+  Sparkles, Video, BarChart3, TrendingUp, Activity, CheckCircle2, 
+  AlertCircle, Play, Square, UploadCloud, Lock, User as UserIcon, LogOut, 
+  Sun, Moon, Menu, X, Mic, VideoOff, Loader2, PauseCircle, PlayCircle,
+  Smile, FileText, Home, RefreshCw, Download, Volume2, Lightbulb, ExternalLink
+} from "lucide-react";
 
 // Main App Component
 const App = () => {
@@ -45,7 +51,7 @@ const AppContent = () => {
         className={`min-h-screen ${theme.bg.primary} flex items-center justify-center`}
       >
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-violet-600/30 border-t-violet-600 rounded-full animate-spin"></div>
+          <Loader2 className="w-12 h-12 text-violet-600 animate-spin" />
           <div className={`${theme.text.primary} text-lg font-medium`}>
             Loading...
           </div>
@@ -128,9 +134,9 @@ const Header = ({ currentPage, setCurrentPage, onShowAuth }) => {
   }, []);
 
   const navItems = [
-    { id: "home", label: "Home", icon: "🏠" },
-    { id: "real-time", label: "Live Analysis", icon: "📹" },
-    { id: "report", label: "Reports", icon: "📊" },
+    { id: "home", label: "Home", icon: <Home className="w-5 h-5" /> },
+    { id: "real-time", label: "Live Analysis", icon: <Video className="w-5 h-5" /> },
+    { id: "report", label: "Reports", icon: <BarChart3 className="w-5 h-5" /> },
   ];
 
   return (
@@ -146,12 +152,12 @@ const Header = ({ currentPage, setCurrentPage, onShowAuth }) => {
             className={`flex items-center gap-3 font-bold ${theme.text.primary} hover:scale-105 transition-all duration-200 group`}
           >
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-violet-500/25 transition-all duration-300">
-                <span className="text-xl">🎯</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-violet-500/25 transition-all duration-300 text-white">
+                <Sparkles className="w-6 h-6" />
               </div>
               <div className="absolute -inset-1 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </div>
-            <div className="hidden sm:block">
+            <div className="hidden sm:block text-left">
               <div className="text-xl font-bold bg-gradient-to-r from-violet-600 to-purple-700 bg-clip-text text-transparent">
                 PresentAI
               </div>
@@ -162,18 +168,18 @@ const Header = ({ currentPage, setCurrentPage, onShowAuth }) => {
           </button>
 
           {/* Navigation */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-2">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setCurrentPage(item.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 ${
                   currentPage === item.id
                     ? theme.nav.buttonActive
                     : theme.nav.button
                 } hover:scale-105`}
               >
-                <span className="text-lg">{item.icon}</span>
+                {item.icon}
                 <span className="hidden lg:inline">{item.label}</span>
               </button>
             ))}
@@ -184,10 +190,10 @@ const Header = ({ currentPage, setCurrentPage, onShowAuth }) => {
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className={`p-3 rounded-xl ${theme.bg.card} ${theme.text.secondary} hover:scale-110 transition-all duration-200 hover:rotate-180`}
+              className={`p-3 rounded-xl ${theme.bg.card} ${theme.text.secondary} hover:scale-110 transition-all duration-200 hover:rotate-180 border`}
               aria-label="Toggle theme"
             >
-              {isDark ? "☀️" : "🌙"}
+              {isDark ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-violet-600" />}
             </button>
 
             {/* Mobile menu button */}
@@ -203,28 +209,31 @@ const Header = ({ currentPage, setCurrentPage, onShowAuth }) => {
             <div className="hidden md:flex items-center gap-3">
               {isAuthenticated ? (
                 <div className="flex items-center gap-3">
-                  <div className={`${theme.bg.card} px-4 py-2 rounded-xl`}>
-                    <div
-                      className={`${theme.text.primary} text-sm font-medium`}
-                    >
-                      {user?.full_name || user?.email?.split("@")[0]}
-                    </div>
-                    <div className={`${theme.text.muted} text-xs`}>
-                      {user?.is_premium ? "Premium" : "Free Trial"}
+                  <div className={`${theme.bg.card} px-4 py-2 rounded-xl border flex items-center gap-3`}>
+                    <UserIcon className="w-4 h-4 text-violet-500" />
+                    <div className="text-left">
+                      <div className={`${theme.text.primary} text-sm font-medium`}>
+                        {user?.full_name || user?.email?.split("@")[0]}
+                      </div>
+                      <div className={`${theme.text.muted} text-xs`}>
+                        {user?.is_premium ? "Pro Member" : "Free Member"}
+                      </div>
                     </div>
                   </div>
                   <button
                     onClick={logout}
-                    className={`px-4 py-2 ${theme.bg.button} ${theme.text.secondary} rounded-xl font-medium transition-all duration-200 hover:scale-105`}
+                    className={`flex items-center gap-2 px-4 py-2.5 ${theme.bg.button} ${theme.text.secondary} rounded-xl font-medium transition-all duration-200 hover:scale-105`}
                   >
+                    <LogOut className="w-4 h-4" />
                     Logout
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={onShowAuth}
-                  className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-violet-500/25"
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-violet-500/25"
                 >
+                  <Sparkles className="w-5 h-5" />
                   Get Started
                 </button>
               )}
@@ -239,40 +248,20 @@ const Header = ({ currentPage, setCurrentPage, onShowAuth }) => {
 // Mobile Menu Component
 const MobileMenuButton = ({ navItems, currentPage, setCurrentPage }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-3 rounded-xl ${theme.bg.card} ${theme.text.primary} transition-all duration-200`}
+        className={`p-3 rounded-xl ${theme.bg.card} ${theme.text.primary} transition-all duration-200 border`}
       >
-        <div className="w-5 h-5 flex flex-col justify-center space-y-1">
-          <div
-            className={`w-full h-0.5 ${
-              isDark ? "bg-white" : "bg-gray-900"
-            } transition-all duration-200 ${
-              isOpen ? "rotate-45 translate-y-1" : ""
-            }`}
-          ></div>
-          <div
-            className={`w-full h-0.5 ${
-              isDark ? "bg-white" : "bg-gray-900"
-            } transition-all duration-200 ${isOpen ? "opacity-0" : ""}`}
-          ></div>
-          <div
-            className={`w-full h-0.5 ${
-              isDark ? "bg-white" : "bg-gray-900"
-            } transition-all duration-200 ${
-              isOpen ? "-rotate-45 -translate-y-1" : ""
-            }`}
-          ></div>
-        </div>
+        {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
       {isOpen && (
         <div
-          className={`absolute top-full right-0 mt-2 w-48 ${theme.bg.secondary} rounded-2xl shadow-xl border backdrop-blur-lg z-50`}
+          className={`absolute top-full right-0 mt-2 w-56 ${theme.bg.secondary} rounded-2xl shadow-2xl border z-50`}
         >
           <div className="p-2 space-y-1">
             {navItems.map((item) => (
@@ -288,7 +277,7 @@ const MobileMenuButton = ({ navItems, currentPage, setCurrentPage }) => {
                     : `${theme.text.secondary} ${theme.bg.cardHover}`
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
+                {item.icon}
                 <span>{item.label}</span>
               </button>
             ))}
@@ -336,21 +325,21 @@ const HomePage = ({ setCurrentPage, onShowAuth }) => {
 
   const features = [
     {
-      icon: "🎭",
+      icon: <Activity className="w-8 h-8 text-white" />,
       title: "Advanced Emotion Analysis",
       description:
         "Real-time facial expression detection using state-of-the-art AI models",
       color: "from-blue-500 to-cyan-600",
     },
     {
-      icon: "🎵",
+      icon: <Mic className="w-8 h-8 text-white" />,
       title: "Vocal Confidence Tracking",
       description:
         "Analyze pitch, tone, and speech patterns to measure confidence levels",
       color: "from-violet-500 to-purple-600",
     },
     {
-      icon: "📈",
+      icon: <TrendingUp className="w-8 h-8 text-white" />,
       title: "Performance Insights",
       description:
         "Comprehensive reports with actionable feedback and improvement suggestions",
@@ -359,7 +348,7 @@ const HomePage = ({ setCurrentPage, onShowAuth }) => {
   ];
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <TrialBanner onShowAuth={onShowAuth} />
 
       {/* Hero Section */}
@@ -369,7 +358,7 @@ const HomePage = ({ setCurrentPage, onShowAuth }) => {
             className={`text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold ${theme.text.primary} leading-tight`}
           >
             Master Your
-            <span className="block bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent pb-2">
               Presentation Skills
             </span>
           </h1>
@@ -385,30 +374,29 @@ const HomePage = ({ setCurrentPage, onShowAuth }) => {
             {hasActiveAccess ? (
               <button
                 onClick={() => setCurrentPage("real-time")}
-                className="group relative px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-violet-500/25 transition-all duration-300 hover:scale-105"
+                className="group relative px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-violet-500/25 transition-all duration-300 hover:scale-105 flex items-center gap-3 justify-center"
               >
-                <span className="relative z-10 flex items-center gap-3">
-                  📹 Start Live Analysis
-                </span>
+                <Video className="w-6 h-6" />
+                <span className="relative z-10">Start Live Analysis</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
             ) : (
               <button
                 onClick={onShowAuth}
-                className="group relative px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-violet-500/25 transition-all duration-300 hover:scale-105"
+                className="group relative px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-violet-500/25 transition-all duration-300 hover:scale-105 flex items-center gap-3 justify-center"
               >
-                <span className="relative z-10 flex items-center gap-3">
-                  🚀 Start Free Trial
-                </span>
+                <Sparkles className="w-6 h-6" />
+                <span className="relative z-10">Get Started Free</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
             )}
 
             <button
               onClick={() => setCurrentPage("report")}
-              className={`px-8 py-4 ${theme.bg.button} ${theme.text.primary} rounded-2xl font-semibold text-lg transition-all duration-300 hover:scale-105 border`}
+              className={`flex items-center gap-3 justify-center px-8 py-4 ${theme.bg.button} ${theme.text.primary} rounded-2xl font-semibold text-lg transition-all duration-300 hover:scale-105 border`}
             >
-              📊 View Demo Report
+              <BarChart3 className="w-6 h-6 text-violet-500" />
+              <span>View Demo Report</span>
             </button>
           </div>
         </div>
@@ -440,7 +428,7 @@ const HomePage = ({ setCurrentPage, onShowAuth }) => {
 
       {/* Stats Section */}
       <section className="py-16 lg:py-24">
-        <div className={`${theme.bg.secondary} rounded-3xl p-8 lg:p-16`}>
+        <div className={`${theme.bg.secondary} rounded-3xl p-8 lg:p-16 border`}>
           <div className="text-center mb-12">
             <h2
               className={`text-2xl sm:text-3xl lg:text-4xl font-bold ${theme.text.primary} mb-4`}
@@ -456,7 +444,7 @@ const HomePage = ({ setCurrentPage, onShowAuth }) => {
               { number: "2.5x", label: "Confidence Improvement" },
               { number: "24/7", label: "Available Support" },
             ].map((stat, index) => (
-              <div key={index} className="text-center group">
+               <div key={index} className="text-center group">
                 <div
                   className={`text-3xl lg:text-4xl xl:text-5xl font-bold bg-gradient-to-r from-violet-600 to-purple-700 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform duration-300`}
                 >
@@ -505,7 +493,7 @@ const FeatureCard = ({ feature, index }) => {
   return (
     <div
       ref={cardRef}
-      className={`group relative ${theme.bg.secondary} rounded-3xl p-8 hover:scale-105 transition-all duration-300 cursor-pointer overflow-hidden`}
+      className={`group relative ${theme.bg.secondary} rounded-3xl p-8 hover:scale-105 transition-all duration-300 cursor-pointer overflow-hidden border`}
     >
       {/* Background gradient */}
       <div
@@ -515,7 +503,7 @@ const FeatureCard = ({ feature, index }) => {
       {/* Icon */}
       <div className="relative mb-6">
         <div
-          className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300 mx-auto`}
+          className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 mx-auto`}
         >
           {feature.icon}
         </div>
@@ -543,7 +531,6 @@ const FeatureCard = ({ feature, index }) => {
 
 // Professional Real-time Page
 const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
-  console.log("RealTimePage component rendered");
   const [isRunning, setIsRunning] = useState(false);
   const [metrics, setMetrics] = useState({
     expression: "Detecting...",
@@ -579,62 +566,43 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
   useEffect(() => {
     checkCameraPermission();
     return () => {
-      // Clean up camera stream when component unmounts
       if (cameraStream) {
         cameraStream.getTracks().forEach((track) => track.stop());
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
 
   const checkCameraPermission = async () => {
     try {
       const result = await navigator.permissions.query({ name: "camera" });
-      console.log("Camera permission status:", result.state);
       setCameraPermission(result.state);
 
       if (result.state === "granted") {
-        console.log("Permission already granted, requesting access...");
         await requestCameraAccess();
       } else if (result.state === "prompt") {
-        console.log("Permission needs to be requested");
-        await requestCameraAccess(); // This will trigger the browser prompt
+        await requestCameraAccess();
       }
-    } catch (error) {
-      console.log("Permissions API not supported, trying direct access");
+    } catch {
       await requestCameraAccess();
     }
   };
 
-
   const requestCameraAccess = async () => {
-    console.log("=== requestCameraAccess called ===");
     try {
-      console.log("About to call getUserMedia...");
-      // Always try to request access if not "granted"
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
       });
 
-      console.log("getUserMedia successful!", stream);
       setCameraStream(stream);
       setCameraPermission("granted");
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        console.log("Video element updated with stream");
-      } else {
-        console.log("videoRef.current is null");
       }
-
-      console.log("Camera access granted");
     } catch (error) {
-      console.error("Camera access error details:", error);
-      console.error("Error name:", error.name);
-      console.error("Error message:", error.message);
       setCameraPermission("denied");
-
       if (error.name === "NotAllowedError") {
         setError(
           "Camera access denied. Please allow camera permissions and refresh the page."
@@ -647,7 +615,6 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
     }
   };
 
-  // Previous logic remains the same...
   const pollEvaluationStatus = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -732,14 +699,7 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
       await checkTrialStatus();
     } catch (e) {
       console.error("Failed to start evaluation:", e);
-      if (e.message.includes("trial_expired")) {
-        setError(
-          "Your free trial has expired. Please create an account to continue."
-        );
-        onShowAuth();
-      } else {
-        setError("Failed to start evaluation: " + e.message);
-      }
+      setError("Failed to start evaluation: " + e.message);
     }
   };
 
@@ -785,17 +745,7 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
       await checkTrialStatus();
     } catch (error) {
       console.error("Failed to upload video:", error);
-      if (
-        error.message.includes("trial_expired") ||
-        error.message.includes("Trial expired")
-      ) {
-        setError(
-          "Your free trial has expired. Please create an account to continue."
-        );
-        onShowAuth();
-      } else {
-        setError("Failed to upload video: " + error.message);
-      }
+      setError("Failed to upload video: " + error.message);
     }
   };
 
@@ -806,46 +756,43 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
     return "device_" + Math.random().toString(36).substr(2, 9);
   };
 
-  useEffect(() => {
-    return () => {
-      if (metricsTimerRef.current) {
-        clearTimeout(metricsTimerRef.current);
-      }
-      if (statusTimerRef.current) {
-        clearTimeout(statusTimerRef.current);
-      }
-    };
-  }, []);
-
   const getStatusDisplay = () => {
     const statusConfig = {
       running: {
         text: "Recording in progress...",
-        icon: "🔴",
+        icon: <Activity className="w-4 h-4 text-red-500 animate-pulse" />,
         color: "text-red-500",
       },
       processing_video: {
         text: "Processing uploaded video...",
-        icon: "⏳",
+        icon: <Loader2 className="w-4 h-4 text-yellow-500 animate-spin" />,
         color: "text-yellow-500",
       },
       completed: {
         text: "Evaluation completed",
-        icon: "✅",
-        color: "text-green-500",
+        icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />,
+        color: "text-emerald-500",
       },
-      failed: { text: "Evaluation failed", icon: "❌", color: "text-red-500" },
+      failed: { 
+        text: "Evaluation failed", 
+        icon: <AlertCircle className="w-4 h-4 text-rose-500" />, 
+        color: "text-rose-500" 
+      },
       stopped: {
         text: "Evaluation stopped",
-        icon: "⏸️",
+        icon: <PauseCircle className="w-4 h-4 text-gray-500" />,
         color: "text-gray-500",
       },
-      idle: { text: "Ready to start", icon: "⚪", color: theme.text.secondary },
+      idle: { 
+        text: "Ready to start", 
+        icon: <PlayCircle className="w-4 h-4 text-gray-400" />, 
+        color: theme.text.secondary 
+      },
     };
 
     const status = statusConfig[evaluationStatus] || statusConfig.idle;
     return (
-      <span className={`${status.color} flex items-center gap-2`}>
+      <span className={`${status.color} flex items-center gap-2 font-medium`}>
         {status.icon} {status.text}
       </span>
     );
@@ -875,7 +822,7 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
 
           {/* Status indicator */}
           <div
-            className={`inline-flex items-center gap-3 ${theme.bg.card} px-6 py-3 rounded-2xl`}
+            className={`inline-flex items-center gap-3 ${theme.bg.card} px-6 py-3 rounded-2xl border`}
           >
             <span className={`${theme.text.secondary} font-medium`}>
               Status:
@@ -885,47 +832,55 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-red-500 text-center backdrop-blur-sm">
-            {error}
+          <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-rose-500 text-center backdrop-blur-sm flex items-center justify-center gap-2 font-medium">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-          {/* Camera Preview - Takes more space */}
+          {/* Camera Preview */}
           <div className="xl:col-span-8">
             <div
-              className={`${theme.bg.secondary} rounded-3xl p-6 lg:p-8 h-full`}
+              className={`${theme.bg.secondary} rounded-3xl p-6 lg:p-8 h-full border`}
             >
               <div className="flex items-center justify-between mb-6">
                 <h2
-                  className={`text-xl lg:text-2xl font-bold ${theme.text.primary}`}
+                  className={`text-xl lg:text-2xl font-bold ${theme.text.primary} flex items-center gap-3`}
                 >
-                  Live Camera Feed
+                  <Video className="w-6 h-6 text-violet-500" />
+                  <span>Live Camera Feed</span>
                 </h2>
                 <div className="flex gap-3">
                   <button
                     onClick={isRunning ? stopEvaluation : startEvaluation}
                     disabled={evaluationStatus === "processing_video"}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${
                       isRunning
-                        ? "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500"
+                        ? "bg-gradient-to-r from-rose-500 to-rose-600 text-white hover:from-rose-400 hover:to-rose-500"
                         : "bg-gradient-to-r from-violet-600 to-purple-700 text-white hover:from-violet-500 hover:to-purple-600"
                     }`}
                   >
-                    {isRunning ? "⏹️ Stop" : "▶️ Start"}
+                    {isRunning ? (
+                      <>
+                        <Square className="w-5 h-5 fill-current" />
+                        <span>Stop Recording</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-5 h-5 fill-current" />
+                        <span>Start Recording</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
 
-              <div className="relative w-full aspect-video bg-gradient-to-br from-gray-900/20 to-gray-800/20 rounded-2xl overflow-hidden border-2 border-dashed border-gray-300/20">
+              <div className="relative w-full aspect-video bg-gradient-to-br from-gray-900/40 to-gray-800/40 rounded-2xl overflow-hidden border-2 border-dashed border-gray-500/20 shadow-inner">
                 {cameraPermission === "denied" ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
-                    <div
-                      className={`text-6xl lg:text-8xl ${theme.text.muted} opacity-50`}
-                    >
-                      🚫
-                    </div>
+                    <VideoOff className={`w-16 h-16 ${theme.text.muted} opacity-50`} />
                     <div
                       className={`${theme.text.secondary} text-lg font-medium text-center px-4`}
                     >
@@ -933,7 +888,7 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
                     </div>
                     <button
                       onClick={requestCameraAccess}
-                      className="px-4 py-2 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700 transition-colors"
+                      className="px-5 py-2.5 bg-violet-600 text-white rounded-xl font-medium hover:bg-violet-700 transition-colors shadow-lg"
                     >
                       Request Camera Access
                     </button>
@@ -947,12 +902,11 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
                       muted
                       className="w-full h-full object-cover"
                     />
-                    {/* You can also show the backend feed if needed */}
                     <img
-                      className="absolute top-2 right-2 w-32 h-24 object-cover rounded border-2 border-white"
+                      className="absolute top-2 right-2 w-32 h-24 object-cover rounded-xl border-2 border-white shadow-xl"
                       src={`/video_feed/${getUserIdentifier()}?ts=${Date.now()}`}
                       alt="Backend processed feed"
-                      style={{ display: "none" }} // Hide this for now
+                      style={{ display: "none" }}
                     />
                   </>
                 ) : cameraPermission === "granted" && !isRunning ? (
@@ -962,42 +916,33 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
                       autoPlay
                       playsInline
                       muted
-                      className="w-full h-full object-cover opacity-50"
+                      className="w-full h-full object-cover opacity-40"
                     />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-black/20">
-                      <div
-                        className={`text-6xl lg:text-8xl ${theme.text.muted} opacity-50`}
-                      >
-                        📹
-                      </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-black/40 backdrop-blur-sm">
+                      <Video className={`w-16 h-16 ${theme.text.muted} opacity-60`} />
                       <div
                         className={`${theme.text.secondary} text-lg font-medium`}
                       >
-                        Click Start to begin analysis
+                        Click Start Recording to begin analysis
                       </div>
                     </div>
                   </>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
-                    <div
-                      className={`text-6xl lg:text-8xl ${theme.text.muted} opacity-50`}
-                    >
-                      📹
-                    </div>
+                    <Loader2 className="w-12 h-12 text-violet-500 animate-spin" />
                     <div
                       className={`${theme.text.secondary} text-lg font-medium`}
                     >
                       Requesting camera access...
                     </div>
-                    <div className="w-8 h-8 border-4 border-violet-600/30 border-t-violet-600 rounded-full animate-spin"></div>
                   </div>
                 )}
 
                 {/* Live indicator */}
                 {isRunning && cameraPermission === "granted" && (
-                  <div className="absolute top-4 right-4 flex items-center gap-2 bg-red-500/90 text-white px-3 py-2 rounded-lg font-medium">
-                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                    LIVE
+                  <div className="absolute top-4 right-4 flex items-center gap-2 bg-rose-500 text-white px-3 py-1.5 rounded-lg font-medium shadow-lg animate-pulse">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <span className="text-sm tracking-wider font-bold">LIVE</span>
                   </div>
                 )}
               </div>
@@ -1006,13 +951,8 @@ const RealTimePage = ({ setCurrentPage, onShowAuth }) => {
 
           {/* Sidebar - Controls and Metrics */}
           <div className="xl:col-span-4 space-y-6">
-            {/* Live Metrics */}
             <MetricsPanel metrics={metrics} theme={theme} />
-
-            {/* Quick Actions */}
             <QuickActionsPanel setCurrentPage={setCurrentPage} theme={theme} />
-
-            {/* File Upload */}
             <FileUploadPanel
               selectedFile={selectedFile}
               setSelectedFile={setSelectedFile}
@@ -1034,43 +974,44 @@ const MetricsPanel = ({ metrics, theme }) => {
     {
       label: "Expression",
       value: metrics.expression,
-      icon: "😊",
+      icon: <Smile className="w-5 h-5 text-white" />,
       color: "from-blue-500 to-cyan-600",
     },
     {
       label: "Pitch (Hz)",
       value: metrics.pitch,
-      icon: "🎵",
+      icon: <Mic className="w-5 h-5 text-white" />,
       color: "from-purple-500 to-pink-600",
     },
     {
       label: "Confidence",
       value: `${metrics.confidence}%`,
-      icon: "📊",
+      icon: <BarChart3 className="w-5 h-5 text-white" />,
       color: "from-emerald-500 to-teal-600",
       highlight: true,
     },
   ];
 
   return (
-    <div className={`${theme.bg.secondary} rounded-3xl p-6`}>
+    <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
       <h3
-        className={`text-xl font-bold ${theme.text.primary} mb-6 flex items-center gap-2`}
+        className={`text-xl font-bold ${theme.text.primary} mb-6 flex items-center gap-3`}
       >
-        📈 Live Metrics
+        <Activity className="w-6 h-6 text-violet-500" />
+        <span>Live Metrics</span>
       </h3>
       <div className="space-y-4">
         {metricsData.map((metric, index) => (
           <div
             key={index}
-            className={`${theme.bg.card} rounded-2xl p-4 ${
-              metric.highlight ? "border-2 border-emerald-500/20" : ""
-            } hover:scale-105 transition-all duration-200`}
+            className={`${theme.bg.card} rounded-2xl p-4 border ${
+              metric.highlight ? "border-emerald-500/30 bg-emerald-500/5" : "border-white/5"
+            } hover:scale-105 transition-all duration-200 shadow-sm`}
           >
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <div
-                  className={`w-8 h-8 bg-gradient-to-br ${metric.color} rounded-lg flex items-center justify-center text-sm`}
+                  className={`w-10 h-10 bg-gradient-to-br ${metric.color} rounded-xl flex items-center justify-center shadow-md`}
                 >
                   {metric.icon}
                 </div>
@@ -1080,7 +1021,7 @@ const MetricsPanel = ({ metrics, theme }) => {
               </div>
             </div>
             <div
-              className={`text-2xl font-bold ${
+              className={`text-3xl font-bold tracking-tight mt-1 ${
                 metric.highlight ? theme.status.success : theme.text.primary
               }`}
             >
@@ -1096,22 +1037,25 @@ const MetricsPanel = ({ metrics, theme }) => {
 // Quick Actions Panel
 const QuickActionsPanel = ({ setCurrentPage, theme }) => {
   return (
-    <div className={`${theme.bg.secondary} rounded-3xl p-6`}>
-      <h3 className={`text-xl font-bold ${theme.text.primary} mb-6`}>
-        Quick Actions
+    <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
+      <h3 className={`text-xl font-bold ${theme.text.primary} mb-6 flex items-center gap-3`}>
+        <Sparkles className="w-6 h-6 text-violet-500" />
+        <span>Quick Actions</span>
       </h3>
       <div className="space-y-3">
         <button
           onClick={() => setCurrentPage("report")}
-          className={`w-full flex items-center gap-3 px-4 py-3 ${theme.bg.button} ${theme.text.primary} rounded-xl font-medium transition-all duration-200 hover:scale-105`}
+          className={`w-full flex items-center gap-3 px-5 py-3.5 ${theme.bg.button} ${theme.text.primary} rounded-xl font-medium transition-all duration-200 hover:scale-105 border`}
         >
-          📄 View Latest Report
+          <FileText className="w-5 h-5 text-violet-500" />
+          <span>View Latest Report</span>
         </button>
         <button
           onClick={() => setCurrentPage("home")}
-          className={`w-full flex items-center gap-3 px-4 py-3 ${theme.bg.button} ${theme.text.primary} rounded-xl font-medium transition-all duration-200 hover:scale-105`}
+          className={`w-full flex items-center gap-3 px-5 py-3.5 ${theme.bg.button} ${theme.text.primary} rounded-xl font-medium transition-all duration-200 hover:scale-105 border`}
         >
-          🏠 Back to Home
+          <Home className="w-5 h-5 text-violet-500" />
+          <span>Back to Home</span>
         </button>
       </div>
     </div>
@@ -1128,9 +1072,10 @@ const FileUploadPanel = ({
   theme,
 }) => {
   return (
-    <div className={`${theme.bg.secondary} rounded-3xl p-6`}>
-      <h3 className={`text-xl font-bold ${theme.text.primary} mb-4`}>
-        📤 Upload Analysis
+    <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
+      <h3 className={`text-xl font-bold ${theme.text.primary} mb-4 flex items-center gap-3`}>
+        <UploadCloud className="w-6 h-6 text-violet-500" />
+        <span>Upload Analysis</span>
       </h3>
       <div className="space-y-4">
         <div className="relative">
@@ -1139,7 +1084,7 @@ const FileUploadPanel = ({
             accept="video/*"
             onChange={(e) => setSelectedFile(e.target.files[0])}
             disabled={evaluationStatus === "processing_video" || isRunning}
-            className={`w-full ${theme.bg.input} ${theme.text.primary} border rounded-xl p-3 transition-all duration-200 disabled:opacity-50 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-violet-600 file:text-white file:font-medium hover:file:bg-violet-700`}
+            className={`w-full ${theme.bg.input} ${theme.text.primary} border rounded-xl p-3 transition-all duration-200 disabled:opacity-50 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-violet-600 file:text-white file:font-medium hover:file:bg-violet-700 cursor-pointer`}
           />
         </div>
 
@@ -1150,20 +1095,23 @@ const FileUploadPanel = ({
             evaluationStatus === "processing_video" ||
             isRunning
           }
-          className="w-full px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
         >
           {evaluationStatus === "processing_video" ? (
-            <span className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              Processing...
-            </span>
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Processing Video...</span>
+            </>
           ) : (
-            "🎬 Analyze Video"
+            <>
+              <UploadCloud className="w-5 h-5" />
+              <span>Analyze Video</span>
+            </>
           )}
         </button>
 
-        <p className={`${theme.text.muted} text-sm text-center`}>
-          Upload a recorded presentation for offline analysis
+        <p className={`${theme.text.muted} text-xs text-center leading-relaxed`}>
+          Upload a recorded presentation video for comprehensive asynchronous offline analysis.
         </p>
       </div>
     </div>
@@ -1175,7 +1123,6 @@ const ReportPage = ({ setCurrentPage, onShowAuth }) => {
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [error, setError] = useState("");
   const { hasActiveAccess } = useAuth();
   const { theme } = useTheme();
   const reportRef = useRef(null);
@@ -1200,8 +1147,9 @@ const ReportPage = ({ setCurrentPage, onShowAuth }) => {
         const token = localStorage.getItem("token");
         const data = await api.getReport(token);
         if (
-          data.confidence_score > 0 ||
-          Object.keys(data.video_analysis || {}).length > 0 ||
+          data &&
+          (data.confidence_score > 0 ||
+            Object.keys(data.video_analysis || {}).length > 0) &&
           (data.transcribed_text &&
             data.transcribed_text !== "No transcript available")
         ) {
@@ -1211,16 +1159,7 @@ const ReportPage = ({ setCurrentPage, onShowAuth }) => {
         }
       } catch (error) {
         console.error("Failed to fetch report data:", error);
-        if (
-          error.message.includes("trial_expired") ||
-          error.message.includes("Trial expired")
-        ) {
-          setError(
-            "Your free trial has expired. Please create an account to view reports."
-          );
-        } else {
-          setReportData(null);
-        }
+        setReportData(null);
       } finally {
         setLoading(false);
       }
@@ -1238,9 +1177,7 @@ const ReportPage = ({ setCurrentPage, onShowAuth }) => {
     try {
       window.open("/download-report", "_blank");
     } catch (error) {
-      if (error.message.includes("trial_expired")) {
-        onShowAuth();
-      }
+      console.error("Download error:", error);
     }
   };
 
@@ -1250,7 +1187,7 @@ const ReportPage = ({ setCurrentPage, onShowAuth }) => {
         className={`min-h-screen ${theme.bg.primary} flex items-center justify-center`}
       >
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-violet-600/30 border-t-violet-600 rounded-full animate-spin"></div>
+          <Loader2 className="w-12 h-12 text-violet-600 animate-spin" />
           <div className={`${theme.text.primary} text-lg font-medium`}>
             Loading report...
           </div>
@@ -1259,34 +1196,12 @@ const ReportPage = ({ setCurrentPage, onShowAuth }) => {
     );
   }
 
-  if (error) {
-    return (
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <TrialBanner onShowAuth={onShowAuth} />
-        <div className="text-center space-y-6">
-          <div className="text-6xl">🔒</div>
-          <h1
-            className={`text-2xl lg:text-3xl font-bold ${theme.text.primary}`}
-          >
-            {error}
-          </h1>
-          <button
-            onClick={onShowAuth}
-            className="px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-300 hover:scale-105 shadow-lg"
-          >
-            Create Account
-          </button>
-        </div>
-      </main>
-    );
-  }
-
   if (!reportData) {
     return (
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <TrialBanner onShowAuth={onShowAuth} />
         <div className="text-center space-y-6">
-          <div className="text-6xl">📊</div>
+          <BarChart3 className="w-20 h-20 text-violet-500 mx-auto" />
           <h1
             className={`text-2xl lg:text-3xl font-bold ${theme.text.primary}`}
           >
@@ -1297,9 +1212,10 @@ const ReportPage = ({ setCurrentPage, onShowAuth }) => {
           </p>
           <button
             onClick={() => setCurrentPage("real-time")}
-            className="px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="flex items-center gap-2 mx-auto px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-300 hover:scale-105 shadow-lg"
           >
-            Start New Evaluation
+            <Video className="w-5 h-5" />
+            <span>Start New Evaluation</span>
           </button>
         </div>
       </main>
@@ -1337,15 +1253,17 @@ const ReportPage = ({ setCurrentPage, onShowAuth }) => {
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-12">
           <button
             onClick={() => setCurrentPage("real-time")}
-            className="px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl font-semibold hover:from-violet-500 hover:to-purple-600 transition-all duration-300 hover:scale-105 shadow-lg"
           >
-            🔄 New Analysis
+            <RefreshCw className="w-5 h-5" />
+            <span>New Analysis</span>
           </button>
           <button
             onClick={downloadReport}
-            className={`px-8 py-4 ${theme.bg.button} ${theme.text.primary} rounded-2xl font-semibold transition-all duration-300 hover:scale-105 border`}
+            className={`flex items-center justify-center gap-2 px-8 py-4 ${theme.bg.button} ${theme.text.primary} rounded-2xl font-semibold transition-all duration-300 hover:scale-105 border`}
           >
-            📥 Download Report
+            <Download className="w-5 h-5 text-violet-500" />
+            <span>Download Report</span>
           </button>
         </div>
       </main>
@@ -1368,52 +1286,54 @@ const ReportContent = ({ reportData, theme, setShowModal }) => {
       {/* Left Column - Key Metrics */}
       <div className="lg:col-span-5 space-y-6">
         {/* Confidence Score */}
-        <div className={`${theme.bg.secondary} rounded-3xl p-8 text-center`}>
+        <div className={`${theme.bg.secondary} rounded-3xl p-8 text-center border`}>
           <h2 className={`text-lg font-semibold ${theme.text.secondary} mb-4`}>
             Overall Confidence Score
           </h2>
           <div className="relative">
-            <div className="text-6xl lg:text-7xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent mb-2">
+            <div className="text-6xl lg:text-7xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent mb-2 tracking-tight">
               {reportData.confidence_score}
             </div>
             <div className={`text-2xl ${theme.text.muted} font-light`}>
               / 100
             </div>
-            <div className={`text-lg font-semibold ${theme.text.primary} mt-4`}>
+            <div className={`text-xl font-bold ${theme.text.primary} mt-4`}>
               {reportData.confidence_level}
             </div>
           </div>
         </div>
 
         {/* Transcript */}
-        <div className={`${theme.bg.secondary} rounded-3xl p-6`}>
+        <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
           <h3
-            className={`text-lg font-semibold ${theme.text.primary} mb-4 flex items-center gap-2`}
+            className={`text-lg font-bold ${theme.text.primary} mb-4 flex items-center gap-3`}
           >
-            🎙️ Speech Transcript
+            <FileText className="w-5 h-5 text-violet-500" />
+            <span>Speech Transcript</span>
           </h3>
           <div
-            className={`${theme.bg.card} rounded-2xl p-4 max-h-40 overflow-y-auto`}
+            className={`${theme.bg.card} rounded-2xl p-5 max-h-48 overflow-y-auto border border-white/5`}
           >
-            <p className={`${theme.text.secondary} text-sm leading-relaxed`}>
+            <p className={`${theme.text.secondary} text-sm leading-relaxed font-sans`}>
               {reportData.transcribed_text || "No transcript available"}
             </p>
           </div>
         </div>
 
         {/* Emotion Breakdown */}
-        <div className={`${theme.bg.secondary} rounded-3xl p-6`}>
+        <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
           <h3
-            className={`text-lg font-semibold ${theme.text.primary} mb-4 flex items-center gap-2`}
+            className={`text-lg font-bold ${theme.text.primary} mb-4 flex items-center gap-3`}
           >
-            🎭 Emotion Analysis
+            <Activity className="w-5 h-5 text-violet-500" />
+            <span>Emotion Analysis</span>
           </h3>
           {totalEmotions === 0 ? (
-            <p className={`${theme.text.muted} text-center py-4`}>
+            <p className={`${theme.text.muted} text-center py-4 text-sm`}>
               No facial expressions detected. Try with better lighting.
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {Object.entries(reportData.video_analysis).map(
                 ([emotion, count]) => {
                   const percentage = ((count / totalEmotions) * 100).toFixed(1);
@@ -1423,19 +1343,19 @@ const ReportContent = ({ reportData, theme, setShowModal }) => {
                       className="flex items-center justify-between"
                     >
                       <span
-                        className={`${theme.text.primary} font-medium capitalize`}
+                        className={`${theme.text.primary} font-medium capitalize text-sm`}
                       >
                         {emotion}
                       </span>
-                      <div className="flex items-center gap-3">
-                        <div className="w-24 bg-gray-300/20 rounded-full h-2">
+                      <div className="flex items-center gap-3 w-2/3 justify-end">
+                        <div className="w-full bg-gray-500/20 rounded-full h-2.5 overflow-hidden">
                           <div
-                            className="h-2 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full transition-all duration-500"
+                            className="h-2.5 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full transition-all duration-500"
                             style={{ width: `${percentage}%` }}
                           ></div>
                         </div>
                         <span
-                          className={`${theme.text.secondary} text-sm font-medium w-12 text-right`}
+                          className={`${theme.text.secondary} text-sm font-semibold w-12 text-right flex-shrink-0`}
                         >
                           {percentage}%
                         </span>
@@ -1452,14 +1372,15 @@ const ReportContent = ({ reportData, theme, setShowModal }) => {
       {/* Right Column - Chart and Analysis */}
       <div className="lg:col-span-7 space-y-6">
         {/* Performance Chart */}
-        <div className={`${theme.bg.secondary} rounded-3xl p-6`}>
+        <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
           <h3
-            className={`text-lg font-semibold ${theme.text.primary} mb-4 flex items-center gap-2`}
+            className={`text-lg font-bold ${theme.text.primary} mb-4 flex items-center gap-3`}
           >
-            📈 Performance Timeline
+            <TrendingUp className="w-5 h-5 text-violet-500" />
+            <span>Performance Timeline</span>
           </h3>
           <div
-            className="relative cursor-pointer rounded-2xl overflow-hidden hover:scale-105 transition-transform duration-300"
+            className="relative cursor-pointer rounded-2xl overflow-hidden hover:scale-105 transition-transform duration-300 border border-white/5 shadow-lg"
             onClick={() => setShowModal(true)}
           >
             <img
@@ -1467,66 +1388,69 @@ const ReportContent = ({ reportData, theme, setShowModal }) => {
               src="/static/report_plot.png"
               alt="Performance Analysis Graph"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <div className="bg-white/90 text-gray-900 px-4 py-2 rounded-lg font-medium">
-                🔍 Click to enlarge
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
+              <div className="bg-white text-gray-900 px-5 py-2.5 rounded-xl font-semibold shadow-2xl flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-violet-600" />
+                <span>Click to enlarge chart</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Audio Analysis */}
-        <div className={`${theme.bg.secondary} rounded-3xl p-6`}>
+        <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
           <h3
-            className={`text-lg font-semibold ${theme.text.primary} mb-4 flex items-center gap-2`}
+            className={`text-lg font-bold ${theme.text.primary} mb-4 flex items-center gap-3`}
           >
-            🔊 Vocal Analysis
+            <Volume2 className="w-5 h-5 text-violet-500" />
+            <span>Vocal Analysis</span>
           </h3>
-          <div className={`${theme.bg.card} rounded-2xl p-6 text-center`}>
-            <div className={`${theme.text.muted} text-sm mb-2`}>
-              Average Pitch
+          <div className={`${theme.bg.card} rounded-2xl p-6 text-center border border-white/5`}>
+            <div className={`${theme.text.muted} text-sm mb-2 font-medium`}>
+              Average Pitch Frequency
             </div>
-            <div className={`text-3xl font-bold ${theme.text.primary}`}>
+            <div className={`text-4xl font-bold ${theme.text.primary} tracking-tight`}>
               {reportData.audio_features} Hz
             </div>
           </div>
         </div>
 
         {/* Recommendations */}
-        <div className={`${theme.bg.secondary} rounded-3xl p-6`}>
+        <div className={`${theme.bg.secondary} rounded-3xl p-6 border`}>
           <h3
-            className={`text-lg font-semibold ${theme.text.primary} mb-4 flex items-center gap-2`}
+            className={`text-lg font-bold ${theme.text.primary} mb-4 flex items-center gap-3`}
           >
-            💡 Recommendations
+            <Lightbulb className="w-5 h-5 text-amber-500" />
+            <span>Recommendations</span>
           </h3>
           {reportData.suggestions && reportData.suggestions.length > 0 ? (
             <div className="space-y-4">
               {reportData.suggestions.map((suggestion, index) => (
                 <div
                   key={index}
-                  className={`${theme.bg.card} rounded-2xl p-4 hover:scale-105 transition-all duration-200`}
+                  className={`${theme.bg.card} rounded-2xl p-5 hover:scale-105 transition-all duration-200 border border-white/5 shadow-sm`}
                 >
-                  <h4 className={`font-semibold ${theme.text.primary} mb-2`}>
+                  <h4 className={`font-bold ${theme.text.primary} mb-2 text-base`}>
                     {suggestion.area}
                   </h4>
-                  <p className={`${theme.text.secondary} text-sm mb-3`}>
+                  <p className={`${theme.text.secondary} text-sm mb-4 leading-relaxed`}>
                     {suggestion.desc}
                   </p>
                   <a
                     href={suggestion.resource}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`inline-flex items-center gap-2 ${theme.text.accent} hover:underline text-sm font-medium`}
+                    className={`inline-flex items-center gap-2 ${theme.text.accent} hover:underline text-sm font-semibold`}
                   >
-                    📚 Learn more →
+                    <span>Learn more from expert resources</span>
+                    <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
               ))}
             </div>
           ) : (
-            <p className={`${theme.text.muted} text-center py-6`}>
-              No specific recommendations available. Your performance looks
-              good!
+            <p className={`${theme.text.muted} text-center py-6 text-sm`}>
+              No specific recommendations available. Your performance is well within optimal ranges!
             </p>
           )}
         </div>
@@ -1537,7 +1461,6 @@ const ReportContent = ({ reportData, theme, setShowModal }) => {
 
 // Chart Modal Component
 const ChartModal = ({ onClose }) => {
-  const { theme } = useTheme();
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -1562,19 +1485,19 @@ const ChartModal = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
       <div ref={modalRef} className="relative max-w-6xl w-full">
         <button
           onClick={onClose}
-          className="absolute -top-4 -right-4 z-10 bg-white text-gray-900 w-10 h-10 rounded-full flex items-center justify-center font-bold hover:scale-110 transition-transform duration-200 shadow-lg"
+          className="absolute -top-4 -right-4 z-10 bg-white text-gray-900 w-10 h-10 rounded-full flex items-center justify-center font-bold hover:scale-110 transition-transform duration-200 shadow-2xl border border-gray-200"
         >
-          ✕
+          <X className="w-5 h-5" />
         </button>
 
         <img
-          className="w-full h-auto rounded-2xl shadow-2xl"
+          className="w-full h-auto rounded-2xl shadow-2xl border border-white/10"
           src={`/static/report_plot.png?t=${Date.now()}`}
           alt="Performance Chart - Enlarged View"
           onClick={(e) => e.stopPropagation()}
@@ -1591,33 +1514,18 @@ const Footer = () => {
   return (
     <footer
       className={`${theme.bg.secondary} border-t ${
-        theme.isDark ? "border-slate-700/20" : "border-gray-200/50"
+        theme.isDark ? "border-white/10" : "border-gray-200/60"
       } mt-20`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className={`${theme.text.secondary} text-sm`}>
-            © 2024 PresentAI. Professional presentation analytics powered by AI.
+          <div className={`${theme.text.secondary} text-sm font-medium`}>
+            © 2026 PresentAI. Professional presentation analytics powered by AI.
           </div>
           <div className="flex items-center gap-6">
-            <a
-              href="#"
-              className={`${theme.text.muted} hover:${theme.text.primary} transition-colors duration-200 text-sm`}
-            >
-              Privacy Policy
-            </a>
-            <a
-              href="#"
-              className={`${theme.text.muted} hover:${theme.text.primary} transition-colors duration-200 text-sm`}
-            >
-              Terms of Service
-            </a>
-            <a
-              href="#"
-              className={`${theme.text.muted} hover:${theme.text.primary} transition-colors duration-200 text-sm`}
-            >
-              Support
-            </a>
+            <span className={`text-xs ${theme.text.muted} hover:${theme.text.primary} cursor-pointer transition-colors`}>Privacy Policy</span>
+            <span className={`text-xs ${theme.text.muted} hover:${theme.text.primary} cursor-pointer transition-colors`}>Terms of Service</span>
+            <span className={`text-xs ${theme.text.muted} hover:${theme.text.primary} cursor-pointer transition-colors`}>Enterprise Contact</span>
           </div>
         </div>
       </div>

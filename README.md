@@ -101,16 +101,16 @@
 ```text
 presentation-evaluator/
 ├── backend/
-│   ├── app.py                     # FastAPI application & API routing
-│   ├── auth.py                    # JWT authentication, user management & device fingerprinting
-│   ├── celery_app.py              # Celery instance & Redis broker configuration
-│   ├── database.py                # MongoDB connection manager
-│   ├── evaluate_module.py         # Core AI evaluation engine (Video, Audio, Speech, Graphs)
-│   ├── evaluate_module_wrapper.py # Wrapper utilities for evaluation execution
-│   ├── models.py                  # Pydantic schemas for Users, Tokens, Trial Status
-│   ├── redis_client.py            # Redis caching, session management & rate limiting
-│   ├── tasks.py                   # Celery asynchronous tasks & scheduled cleanup
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── endpoints/         # Modular API routers (auth, evaluation, video, reporting, system)
+│   │   ├── core/                  # Core singletons (celery_app, database, limiter, redis_client, security)
+│   │   ├── models/                # Pydantic data schemas
+│   │   ├── services/              # Business logic & AI evaluation engine (evaluate_module.py)
+│   │   ├── worker/                # Celery background tasks & scheduled cleanup (tasks.py)
+│   │   └── main.py                # FastAPI application entry point
 │   ├── start_services.sh          # Quick-start shell script for background daemons
+│   ├── run_backend.py             # Python runner script for managing background services
 │   ├── requirements.txt           # Python backend dependencies
 │   ├── pretrained.xml / haarcascade # OpenCV face detection models
 │   ├── resources.db               # SQLite database containing improvement suggestions
@@ -196,7 +196,7 @@ chmod +x start_services.sh
 ./start_services.sh
 
 # Once background workers are running, start FastAPI:
-python app.py
+python -m app.main
 ```
 
 #### Option B: Manual Startup (Separate Terminals)
@@ -206,15 +206,15 @@ redis-server
 
 # Terminal 2: Start Celery Worker
 cd backend
-celery -A celery_app worker --loglevel=info
+celery -A app.core.celery_app worker --loglevel=info
 
 # Terminal 3: Start Celery Beat (Scheduled Cleanup)
 cd backend
-celery -A celery_app beat --loglevel=info
+celery -A app.core.celery_app beat --loglevel=info
 
 # Terminal 4: Start FastAPI Application
 cd backend
-python app.py
+python -m app.main
 ```
 *FastAPI will start running on `http://localhost:5000`.*
 
