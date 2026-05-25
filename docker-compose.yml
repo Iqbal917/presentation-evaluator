@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: presentation-evaluator-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: presentation-evaluator-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - backend-static:/app/static
+      - backend-user-data:/app/user_data
+      - backend-uploads:/app/uploads
+    environment:
+      - SECRET_KEY=replace-with-your-secret
+      - MONGODB_URL=mongodb://mongo:27017
+      - DATABASE_NAME=presentation_evaluator
+    depends_on:
+      - mongo
+    command: uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload
+
+
+volumes:
+  mongo-data:
+  backend-static:
+  backend-user-data:
+  backend-uploads:

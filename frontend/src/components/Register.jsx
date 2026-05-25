@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../context/ThemeContext";
 import { User, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
@@ -8,29 +8,17 @@ const Register = ({ onSwitchToLogin, onClose }) => {
     email: "",
     password: "",
     confirmPassword: "",
-    full_name: ""
+    full_name: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { register } = useAuth();
   const { theme } = useTheme();
-  const formRef = useRef(null);
-
-  useEffect(() => {
-    import('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js').then(() => {
-      if (window.gsap && formRef.current) {
-        window.gsap.fromTo(formRef.current, 
-          { opacity: 0, scale: 0.9, y: 20 }, 
-          { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "power2.out" }
-        );
-      }
-    });
-  }, []);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -54,25 +42,29 @@ const Register = ({ onSwitchToLogin, onClose }) => {
     const result = await register({
       email: formData.email,
       password: formData.password,
-      full_name: formData.full_name || null
+      full_name: formData.full_name || null,
     });
-    
+
     if (result.success) {
       onClose();
     } else {
       setError(result.error);
     }
-    
+
     setLoading(false);
   };
 
   return (
-    <div ref={formRef} className={`${theme.bg.secondary} rounded-3xl p-8 w-full max-w-md mx-auto shadow-2xl border backdrop-blur-xl`}>
+    <div
+      className={`${theme.bg.secondary} rounded-3xl p-8 w-full max-w-md mx-auto shadow-2xl border backdrop-blur-xl transition-all duration-300`}
+    >
       <div className="text-center mb-8">
         <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-500/20 text-white">
           <User className="w-8 h-8" />
         </div>
-        <h2 className={`text-2xl lg:text-3xl font-bold ${theme.text.primary} mb-2 tracking-tight`}>
+        <h2
+          className={`text-2xl lg:text-3xl font-bold ${theme.text.primary} mb-2 tracking-tight`}
+        >
           Create Account
         </h2>
         <p className={`${theme.text.secondary} text-sm`}>
@@ -89,7 +81,9 @@ const Register = ({ onSwitchToLogin, onClose }) => {
         )}
 
         <div className="space-y-2">
-          <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
+          <label
+            className={`block ${theme.text.primary} text-sm font-semibold mb-2`}
+          >
             Full Name (Optional)
           </label>
           <div className="relative">
@@ -108,7 +102,9 @@ const Register = ({ onSwitchToLogin, onClose }) => {
         </div>
 
         <div className="space-y-2">
-          <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
+          <label
+            className={`block ${theme.text.primary} text-sm font-semibold mb-2`}
+          >
             Email Address *
           </label>
           <div className="relative">
@@ -128,7 +124,9 @@ const Register = ({ onSwitchToLogin, onClose }) => {
         </div>
 
         <div className="space-y-2">
-          <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
+          <label
+            className={`block ${theme.text.primary} text-sm font-semibold mb-2`}
+          >
             Password *
           </label>
           <div className="relative">
@@ -148,7 +146,9 @@ const Register = ({ onSwitchToLogin, onClose }) => {
         </div>
 
         <div className="space-y-2">
-          <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
+          <label
+            className={`block ${theme.text.primary} text-sm font-semibold mb-2`}
+          >
             Confirm Password *
           </label>
           <div className="relative">

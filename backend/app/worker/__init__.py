@@ -1,1 +1,1 @@
-# Celery tasks and background workers
+# Background worker functions for local task execution

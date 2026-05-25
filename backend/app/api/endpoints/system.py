@@ -4,8 +4,7 @@ from slowapi.errors import RateLimitExceeded
 from app.core.limiter import limiter
 from app.core.security import get_current_user, get_current_user_optional, get_user_identifier
 from app.core.database import get_database
-from app.core.redis_client import RedisManager
-from app.core.celery_app import celery_app
+from app.core.app_state import AppState
 from app.models.schemas import User
 
 router = APIRouter(tags=["System & Monitoring"])
@@ -14,22 +13,16 @@ router = APIRouter(tags=["System & Monitoring"])
 async def health_check():
     """Health check endpoint"""
     try:
-        # Check Redis connectivity
-        RedisManager.redis_client.ping()
-        
         # Check MongoDB connectivity
         db = get_database()
         db.command('ping')
-        
-        # Check Celery workers
-        inspect = celery_app.control.inspect()
-        active_workers = inspect.active()
-        
+
+        active_tasks = AppState.get_active_task_count()
+
         return {
             "status": "healthy",
-            "redis": "connected",
             "mongodb": "connected",
-            "celery_workers": len(active_workers) if active_workers else 0,
+            "active_tasks": active_tasks,
             "timestamp": time.time()
         }
     except Exception as e:
@@ -52,30 +45,17 @@ async def get_system_stats(request: Request, current_user: User = Depends(get_cu
         raise HTTPException(status_code=403, detail="Admin access required")
     
     try:
-        # Get Redis stats
-        redis_info = RedisManager.redis_client.info()
-        
-        # Get active tasks
-        inspect = celery_app.control.inspect()
-        active_tasks = inspect.active()
-        
         # Get MongoDB stats
         db = get_database()
         user_count = db.users.count_documents({})
-        device_trials = db.device_trials.count_documents({})
-        
+        active_tasks = AppState.get_active_task_count()
+
         return {
             "users": {
-                "total_registered": user_count,
-                "device_trials": device_trials
+                "total_registered": user_count
             },
-            "redis": {
-                "connected_clients": redis_info.get("connected_clients", 0),
-                "used_memory_human": redis_info.get("used_memory_human", "0B")
-            },
-            "celery": {
-                "active_tasks": sum(len(tasks) for tasks in active_tasks.values()) if active_tasks else 0,
-                "workers": len(active_tasks) if active_tasks else 0
+            "tasks": {
+                "active_tasks": active_tasks
             }
         }
     except Exception as e:

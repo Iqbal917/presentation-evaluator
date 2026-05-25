@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../context/ThemeContext";
 import { Sparkles, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
@@ -10,18 +10,6 @@ const LoginComponent = ({ onSwitchToRegister, onClose }) => {
   const [error, setError] = useState("");
   const { login } = useAuth();
   const { theme } = useTheme();
-  const formRef = useRef(null);
-
-  useEffect(() => {
-    import('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js').then(() => {
-      if (window.gsap && formRef.current) {
-        window.gsap.fromTo(formRef.current, 
-          { opacity: 0, scale: 0.9, y: 20 }, 
-          { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "power2.out" }
-        );
-      }
-    });
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,23 +17,27 @@ const LoginComponent = ({ onSwitchToRegister, onClose }) => {
     setError("");
 
     const result = await login({ email, password });
-    
+
     if (result.success) {
       onClose();
     } else {
       setError(result.error);
     }
-    
+
     setLoading(false);
   };
 
   return (
-    <div ref={formRef} className={`${theme.bg.secondary} rounded-3xl p-8 w-full max-w-md mx-auto shadow-2xl border backdrop-blur-xl`}>
+    <div
+      className={`${theme.bg.secondary} rounded-3xl p-8 w-full max-w-md mx-auto shadow-2xl border backdrop-blur-xl transition-all duration-300`}
+    >
       <div className="text-center mb-8">
         <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-500/20 text-white">
           <Sparkles className="w-8 h-8" />
         </div>
-        <h2 className={`text-2xl lg:text-3xl font-bold ${theme.text.primary} mb-2 tracking-tight`}>
+        <h2
+          className={`text-2xl lg:text-3xl font-bold ${theme.text.primary} mb-2 tracking-tight`}
+        >
           Welcome Back
         </h2>
         <p className={`${theme.text.secondary} text-sm`}>
@@ -62,7 +54,9 @@ const LoginComponent = ({ onSwitchToRegister, onClose }) => {
         )}
 
         <div className="space-y-2">
-          <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
+          <label
+            className={`block ${theme.text.primary} text-sm font-semibold mb-2`}
+          >
             Email Address
           </label>
           <div className="relative">
@@ -81,7 +75,9 @@ const LoginComponent = ({ onSwitchToRegister, onClose }) => {
         </div>
 
         <div className="space-y-2">
-          <label className={`block ${theme.text.primary} text-sm font-semibold mb-2`}>
+          <label
+            className={`block ${theme.text.primary} text-sm font-semibold mb-2`}
+          >
             Password
           </label>
           <div className="relative">

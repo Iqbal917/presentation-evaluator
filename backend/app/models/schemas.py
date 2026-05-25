@@ -10,8 +10,6 @@ class User(BaseModel):
     full_name: Optional[str] = None
     is_active: bool = True
     created_at: datetime
-    trial_started_at: Optional[datetime] = None
-    trial_evaluations_used: int = 0
     is_premium: bool = True
 
     model_config = {
@@ -49,12 +47,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: Optional[str] = None
 
-class TrialStatus(BaseModel):
-    is_trial_active: bool = True
-    days_remaining: Optional[int] = None
-    evaluations_remaining: Optional[int] = None
-    trial_expired: bool = False
-
 class UserResponse(BaseModel):
     id: str
     email: str
@@ -62,5 +54,3 @@ class UserResponse(BaseModel):
     is_active: bool
     is_premium: bool
     created_at: str
-    trial_started_at: Optional[str] = None
-    trial_evaluations_used: int = 0

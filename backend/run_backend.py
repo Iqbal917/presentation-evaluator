@@ -37,30 +37,10 @@ def is_port_in_use(port, host='127.0.0.1'):
         return s.connect_ex((host, port)) == 0
 
 def check_prerequisites():
-    """Check if Redis and MongoDB are running."""
+    """Check if MongoDB is running."""
     print("=" * 60)
-    print("Starting PresentAI Backend & Background Services")
+    print("Starting PresentAI Backend")
     print("=" * 60)
-    
-    # Check Redis
-    print("[Checking] Redis server (port 6379)...", end=" ")
-    if is_port_in_use(6379):
-        print("RUNNING")
-    else:
-        print("NOT RUNNING")
-        print("[Attempting] Starting redis-server...")
-        try:
-            # Attempt to start redis-server
-            p = subprocess.Popen(['redis-server'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            child_processes.append(p)
-            time.sleep(2)
-            if is_port_in_use(6379):
-                print("[Success] Redis server started.")
-            else:
-                print("[Warning] Could not confirm Redis started. Ensure Redis is running or installed.")
-        except FileNotFoundError:
-            print("[Warning] redis-server executable not found in PATH.")
-            print("Please ensure Redis is running manually (e.g., via Memurai, WSL, or Windows Service).")
 
     # Check MongoDB
     print("[Checking] MongoDB server (port 27017)...", end=" ")
@@ -73,7 +53,7 @@ def check_prerequisites():
     print("-" * 60)
 
 def start_services():
-    """Start Celery worker, Celery beat, and FastAPI app."""
+    """Start FastAPI app."""
     # Ensure we are in the backend directory (supports normal execution and frozen bundles e.g. PyInstaller)
     if getattr(sys, 'frozen', False):
         script_dir = os.path.dirname(sys.executable)
@@ -85,45 +65,22 @@ def start_services():
     venv_python = os.path.join(script_dir, '.venv', 'Scripts', 'python.exe') if sys.platform == 'win32' else os.path.join(script_dir, '.venv', 'bin', 'python')
     python_exe = venv_python if os.path.exists(venv_python) else sys.executable
     
-    # Determine correct celery executable (use virtualenv if present)
-    venv_celery = os.path.join(script_dir, '.venv', 'Scripts', 'celery.exe') if sys.platform == 'win32' else os.path.join(script_dir, '.venv', 'bin', 'celery')
-    celery_exe = venv_celery if os.path.exists(venv_celery) else 'celery'
-    
-    # 1. Start Celery Worker
-    print(f"[Starting] Celery Worker using {celery_exe}...")
-    celery_cmd = [celery_exe, '-A', 'app.core.celery_app', 'worker', '--loglevel=info']
-    if sys.platform == 'win32':
-        # Windows requires --pool=solo for reliable celery execution
-        celery_cmd.append('--pool=solo')
-    
-    worker_proc = subprocess.Popen(celery_cmd)
-    child_processes.append(worker_proc)
-    time.sleep(2)
-    
-    # 2. Start Celery Beat
-    print(f"[Starting] Celery Beat Scheduler using {celery_exe}...")
-    beat_cmd = [celery_exe, '-A', 'app.core.celery_app', 'beat', '--loglevel=info']
-    beat_proc = subprocess.Popen(beat_cmd)
-    child_processes.append(beat_proc)
-    time.sleep(2)
-    
-    # 3. Start FastAPI Application
+    # Start FastAPI Application
     print(f"[Starting] FastAPI Application Server using {python_exe}...")
     app_proc = subprocess.Popen([python_exe, '-m', 'app.main'])
     child_processes.append(app_proc)
     
     print("=" * 60)
-    print("All backend services are running! Press Ctrl+C to stop all services.")
+    print("Backend service is running! Press Ctrl+C to stop.")
     print("=" * 60)
     
-    # Keep main thread alive to monitor child processes
+    # Keep main thread alive to monitor child process
     try:
         while True:
             time.sleep(1)
-            # Check if any process terminated unexpectedly
-            for p in child_processes:
-                if p.poll() is not None and p in [worker_proc, beat_proc, app_proc]:
-                    print(f"\n[Warning] Service process (PID {p.pid}) terminated unexpectedly with code {p.returncode}")
+            if app_proc.poll() is not None:
+                print(f"\n[Warning] Backend process (PID {app_proc.pid}) terminated unexpectedly with code {app_proc.returncode}")
+                break
     except KeyboardInterrupt:
         print("\n[Exit request] Received KeyboardInterrupt.")
         # atexit cleanup will be called automatically

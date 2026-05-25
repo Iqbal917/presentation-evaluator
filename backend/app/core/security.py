@@ -5,9 +5,8 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from decouple import config
-from app.models.schemas import User, TokenData, TrialStatus
+from app.models.schemas import User, TokenData
 from app.core.database import get_database
-from app.core.redis_client import RedisManager
 from bson import ObjectId
 import hashlib
 import json
@@ -16,8 +15,6 @@ import json
 SECRET_KEY = config("SECRET_KEY", default="your-secret-key-here")
 ALGORITHM = config("ALGORITHM", default="HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(config("ACCESS_TOKEN_EXPIRE_MINUTES", default="1440"))
-TRIAL_DAYS = int(config("TRIAL_DAYS", default="7"))
-MAX_TRIAL_EVALUATIONS = int(config("MAX_TRIAL_EVALUATIONS", default="5"))
 
 # Security
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -68,8 +65,6 @@ def create_user(email: str, password: str, full_name: Optional[str] = None):
         "full_name": full_name,
         "is_active": True,
         "created_at": datetime.utcnow(),
-        "trial_started_at": datetime.utcnow(),
-        "trial_evaluations_used": 0,
         "is_premium": True
     }
     
@@ -78,9 +73,6 @@ def create_user(email: str, password: str, full_name: Optional[str] = None):
     # Convert ObjectId to string for Pydantic
     user_dict["_id"] = str(result.inserted_id)
     user = User(**user_dict)
-    
-    # Cache the new user
-    RedisManager.set_user_session(f"user:{email}", user.model_dump(by_alias=True), 600)
     
     return user
 
@@ -109,9 +101,6 @@ def authenticate_user(email: str, password: str):
         
         print(f"DEBUG: User object created successfully")
         
-        # Cache authenticated user
-        RedisManager.set_user_session(f"user:{email}", user.model_dump(by_alias=True), 600)
-        
         return user
         
     except Exception as e:
@@ -119,12 +108,6 @@ def authenticate_user(email: str, password: str):
         return False
 
 def get_user_by_email(email: str, use_cache: bool = True):
-    # Try cache first
-    if use_cache:
-        cached_user = RedisManager.get_user_session(f"user:{email}")
-        if cached_user:
-            return User(**cached_user)
-    
     # Get from database
     db = get_database()
     user_dict = db.users.find_one({"email": email})
@@ -132,10 +115,6 @@ def get_user_by_email(email: str, use_cache: bool = True):
         # Convert ObjectId to string for Pydantic
         user_dict["_id"] = str(user_dict["_id"])
         user = User(**user_dict)
-        
-        # Cache for 10 minutes
-        if use_cache:
-            RedisManager.set_user_session(f"user:{email}", user.model_dump(by_alias=True), 600)
         
         return user
     return None
@@ -178,25 +157,24 @@ def generate_device_fingerprint(request: Request):
     fingerprint_data = f"{user_agent}|{accept_language}|{accept_encoding}"
     return hashlib.sha256(fingerprint_data.encode()).hexdigest()
 
-def check_device_trial(request: Request):
-    """Check if device has trial remaining with Redis caching"""
-    return TrialStatus(is_trial_active=True, trial_expired=False, days_remaining=None, evaluations_remaining=None)
-
-def get_trial_status_from_doc(trial_doc):
-    """Calculate trial status from document"""
-    return TrialStatus(is_trial_active=True, trial_expired=False, days_remaining=None, evaluations_remaining=None)
-
-def get_user_trial_status(user: User):
-    """Get trial status for logged-in user with caching"""
-    return TrialStatus(is_trial_active=True, trial_expired=False, days_remaining=None, evaluations_remaining=None)
-
 def increment_evaluation_count(request: Request, user: Optional[User] = None):
     """Increment evaluation count for device or user"""
     pass
 
 def get_user_identifier(request: Request, user: Optional[User] = None) -> str:
     """Get unique identifier for user or device"""
+    # Allow the frontend to supply a client identifier (keeps device id stable)
+    header_id = None
+    try:
+        header_id = request.headers.get("x-client-identifier")
+    except Exception:
+        header_id = None
+
     if user:
         return str(user.id)
+
+    if header_id:
+        return header_id
+
     return f"device:{generate_device_fingerprint(request)}"
 

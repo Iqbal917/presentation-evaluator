@@ -62,7 +62,5 @@ async def startup_event():
 if __name__ == "__main__":
     import uvicorn
     print("Starting FastAPI server...")
-    print("Make sure Celery worker is running: celery -A app.core.celery_app worker --loglevel=info")
-    print("Make sure Redis is running on localhost:6379")
     print("Make sure MongoDB is running on localhost:27017")
     uvicorn.run("app.main:app", host="0.0.0.0", port=5000, reload=True)

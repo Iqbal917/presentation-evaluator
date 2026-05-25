@@ -16,10 +16,10 @@ export const authAPI = {
     console.log('Original userData:', userData);
     console.log('JSON.stringify:', JSON.stringify(userData));
     console.log('================================');
-    
+
     const response = await fetch(`/auth/register`, {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
         "Accept": "application/json"
       },
@@ -30,7 +30,7 @@ export const authAPI = {
     console.log('Response status:', response.status);
     console.log('Response statusText:', response.statusText);
     console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-    
+
     const responseText = await response.text();
     console.log('Raw response text:', responseText);
     console.log('========================');
@@ -56,7 +56,7 @@ export const authAPI = {
 
   login: async (credentials) => {
     console.log('Login data being sent:', credentials);
-    
+
     const response = await fetch(`/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -90,32 +90,28 @@ export const authAPI = {
   },
 
   // ADD THIS MISSING FUNCTION TOO:
-  getTrialStatus: async (token = null) => {
-    const headers = {};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-
-    const response = await fetch(`/auth/trial-status`, { headers });
-    const data = await safeJson(response);
-
-    if (!response.ok) {
-      return { is_trial_active: false, trial_expired: true };
-    }
-
-    return data || { is_trial_active: false, trial_expired: true };
-  },
 };
 
 // Keep the rest of your code the same...
 export const evaluationAPI = {
   startEvaluation: async (token = null) => {
     const headers = { "Content-Type": "application/json" };
+    const clientId = localStorage.getItem("clientIdentifier");
+    if (clientId) headers["x-client-identifier"] = clientId;
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
     const response = await fetch(`/start-evaluation`, { method: "POST", headers });
-    const data = await safeJson(response);
+    const text = await response.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch (e) {
+      console.error("Failed to parse start evaluation response", text, e);
+    }
 
     if (!response.ok) {
-      throw new Error(data?.detail?.message || data?.detail || "Failed to start evaluation");
+      console.error("Start evaluation failed", response.status, data, text);
+      throw new Error(data?.detail?.message || data?.detail || data?.message || `Failed to start evaluation (${response.status})`);
     }
 
     return data || { success: response.ok };
@@ -123,6 +119,8 @@ export const evaluationAPI = {
 
   stopEvaluation: async (token = null) => {
     const headers = { Accept: "application/json" };
+    const clientId = localStorage.getItem("clientIdentifier");
+    if (clientId) headers["x-client-identifier"] = clientId;
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
     const response = await fetch(`/stop-evaluation?no_redirect=1`, { method: "POST", headers });
@@ -131,6 +129,8 @@ export const evaluationAPI = {
 
   getEvaluationStatus: async (token = null) => {
     const headers = {};
+    const clientId = localStorage.getItem("clientIdentifier");
+    if (clientId) headers["x-client-identifier"] = clientId;
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
     const response = await fetch(`/evaluation-status`, { headers });
@@ -139,6 +139,8 @@ export const evaluationAPI = {
 
   getMetrics: async (token = null) => {
     const headers = { cache: "no-store" };
+    const clientId = localStorage.getItem("clientIdentifier");
+    if (clientId) headers["x-client-identifier"] = clientId;
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
     const response = await fetch(`/api/metrics`, { headers });
@@ -147,6 +149,8 @@ export const evaluationAPI = {
 
   getReport: async (token = null) => {
     const headers = {};
+    const clientId = localStorage.getItem("clientIdentifier");
+    if (clientId) headers["x-client-identifier"] = clientId;
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
     const response = await fetch(`/api/report`, { headers });
@@ -164,6 +168,8 @@ export const evaluationAPI = {
     formData.append("file", file);
 
     const headers = {};
+    const clientId = localStorage.getItem("clientIdentifier");
+    if (clientId) headers["x-client-identifier"] = clientId;
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
     const response = await fetch(`/upload_video`, {
@@ -203,27 +209,18 @@ export const tokenManager = {
 
 // ---------------- AUTH SERVICE ----------------
 export const authService = {
-  checkTrialStatus: async () => {
-    try {
-      const token = tokenManager.getToken();
-      return await authAPI.getTrialStatus(token);
-    } catch (error) {
-      console.error("Failed to check trial status:", error);
-      return { is_trial_active: false, trial_expired: true };
-    }
-  },
 
   login: async (credentials) => {
     try {
       const response = await authAPI.login(credentials);
       console.log('Login service response:', response);
-      
+
       // Handle different possible response formats
       const token = response.access_token || response.token;
       if (!token) {
         throw new Error("No access token received from server");
       }
-      
+
       tokenManager.setToken(token);
 
       const userData = await authAPI.getCurrentUser(token);
@@ -238,7 +235,7 @@ export const authService = {
     try {
       const response = await authAPI.register(userData);
       console.log('Register service response:', response);
-      
+
       // Handle different possible response formats
       const token = response.access_token || response.token;
       if (!token) {
@@ -250,7 +247,7 @@ export const authService = {
           password: userData.password
         });
       }
-      
+
       tokenManager.setToken(token);
 
       const userInfo = await authAPI.getCurrentUser(token);

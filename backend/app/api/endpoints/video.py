@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Request, File, UploadFile, HTTPException
+from fastapi import APIRouter, Request, File, UploadFile, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
 import os
 import time
 import re
 import unicodedata
+import uuid
+from app.core.app_state import AppState
 from app.core.limiter import limiter
 from app.core.security import get_current_user_optional, get_user_identifier, increment_evaluation_count
 from app.worker.tasks import process_uploaded_video
@@ -25,7 +27,7 @@ def allowed_file(filename: str) -> bool:
 
 @router.post("/upload_video")
 @limiter.limit("5/minute")
-async def upload_video(request: Request, file: UploadFile = File(...)):
+async def upload_video(request: Request, file: UploadFile = File(...), background_tasks: BackgroundTasks = None):
     try:
         current_user = await get_current_user_optional(request)
         user_identifier = get_user_identifier(request, current_user)
@@ -48,13 +50,19 @@ async def upload_video(request: Request, file: UploadFile = File(...)):
             content = await file.read()
             buffer.write(content)
         
-        # Process video as Celery task
-        task = process_uploaded_video.delay(user_identifier, upload_path)
-        
+        # Process video in a background task, with in-process status tracking
+        task_id = str(uuid.uuid4())
+        AppState.set_task_status(user_identifier, {
+            "status": "processing_video",
+            "task_id": task_id,
+            "started_at": time.time()
+        })
+        background_tasks.add_task(process_uploaded_video, user_identifier, upload_path, user_upload_dir, task_id)
+
         # Increment evaluation count
         increment_evaluation_count(request, current_user)
-        
-        return {"status": "processing", "task_id": task.id}
+
+        return {"status": "processing", "task_id": task_id}
         
     except HTTPException:
         raise
@@ -69,17 +77,22 @@ async def video_feed(user_id: str, request: Request):
     print(f"DEBUG: Requested user_id: {user_id}")
     print(f"DEBUG: Expected identifier: {expected_identifier}")
     print(f"DEBUG: Current user: {current_user.email if current_user else 'None'}")
-    
-    if user_id != expected_identifier:
-        print(f"DEBUG: MISMATCH - Got {user_id}, expected {expected_identifier}")
-        raise HTTPException(status_code=403, detail="Access denied")
+    # If the client is authenticated, require the expected identifier (user id)
+    # For unauthenticated/device clients, accept the path-provided user_id so
+    # frontend-generated device IDs (or a header) will work.
+    if current_user:
+        feed_user_id = expected_identifier
+        if user_id != expected_identifier:
+            print(f"DEBUG: AUTH MISMATCH - Got {user_id}, expected {expected_identifier}. Using expected identifier for feed.")
+    else:
+        feed_user_id = user_id
     
     def generate():
         idle_sleep = 0.1
         while True:
             try:
-                # Get user-specific frame
-                frame = evaluate_module.get_user_latest_frame(user_id)
+                # Get user-specific frame using the derived identifier
+                frame = evaluate_module.get_user_latest_frame(feed_user_id)
             except Exception:
                 frame = None
             if frame is not None:

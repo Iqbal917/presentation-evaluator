@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 import time
+import uuid
+import threading
 from app.core.limiter import limiter
 from app.core.security import get_current_user_optional, get_user_identifier, increment_evaluation_count
-from app.core.redis_client import RedisManager
+from app.core.app_state import AppState
 from app.worker.tasks import process_real_time_evaluation
-from app.core.celery_app import celery_app
 from app.services import evaluate_module
 
 router = APIRouter(tags=["Evaluation"])
@@ -16,23 +17,37 @@ async def start_evaluation(request: Request):
     try:
         current_user = await get_current_user_optional(request)
         user_identifier = get_user_identifier(request, current_user)
-        
+
         # Check if user already has running evaluation
-        eval_status = RedisManager.get_evaluation_status(user_identifier)
+        eval_status = AppState.get_task_status(user_identifier)
         if eval_status and eval_status.get("status") == "running":
             return {"status": "already_running", "task_id": eval_status.get("task_id")}
-        
-        # Start evaluation as Celery task
-        task = process_real_time_evaluation.delay(user_identifier)
-        
+
+        task_id = str(uuid.uuid4())
+        AppState.set_task_status(user_identifier, {
+            "status": "running",
+            "task_id": task_id,
+            "started_at": time.time()
+        })
+
+        worker_thread = threading.Thread(
+            target=process_real_time_evaluation,
+            args=(user_identifier, task_id),
+            daemon=True
+        )
+        worker_thread.start()
+
         # Increment evaluation count
-        increment_evaluation_count(request, current_user)
-        
-        return {"status": "started", "task_id": task.id}
-        
+        try:
+            increment_evaluation_count(request, current_user)
+        except Exception as count_exc:
+            print(f"[evaluation] increment_evaluation_count error: {type(count_exc).__name__}: {count_exc}")
+
+        return {"status": "started", "task_id": task_id}
     except HTTPException:
         raise
     except Exception as e:
+        print(f"[evaluation] start evaluation error: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/stop-evaluation")
@@ -43,19 +58,16 @@ async def stop_evaluation(request: Request, no_redirect: str = None):
         user_identifier = get_user_identifier(request, current_user)
         
         # Get evaluation status
-        eval_status = RedisManager.get_evaluation_status(user_identifier)
-        if eval_status and eval_status.get("task_id"):
-            # Revoke the Celery task
-            celery_app.control.revoke(eval_status["task_id"], terminate=True)
-        
+        eval_status = AppState.get_task_status(user_identifier)
+        if eval_status and eval_status.get("status") in {"running", "processing_video"}:
+            evaluate_module.stop_user_recording(user_identifier)
+
         # Update status to stopped
-        RedisManager.set_evaluation_status(user_identifier, {
+        AppState.set_task_status(user_identifier, {
             "status": "stopped",
+            "task_id": eval_status.get("task_id") if eval_status else None,
             "stopped_at": time.time()
         })
-        
-        # Call stop recording for immediate stop
-        evaluate_module.stop_user_recording(user_identifier)
         
         accept_header = request.headers.get('accept', '')
         if no_redirect == '1' or 'application/json' in accept_header:
@@ -72,7 +84,7 @@ async def get_evaluation_status_endpoint(request: Request):
     current_user = await get_current_user_optional(request)
     user_identifier = get_user_identifier(request, current_user)
     
-    status = RedisManager.get_evaluation_status(user_identifier)
+    status = AppState.get_task_status(user_identifier)
     if not status:
         return {"status": "idle"}
     
@@ -85,24 +97,11 @@ async def get_metrics(request: Request):
         current_user = await get_current_user_optional(request)
         user_identifier = get_user_identifier(request, current_user)
         
-        # Try to get user-specific metrics from Redis
-        metrics = RedisManager.get_user_metrics(user_identifier)
-        if metrics:
-            return metrics
-        
-        # Fallback to evaluate_module for backwards compatibility
-        try:
-            metrics = evaluate_module.get_user_current_metrics(user_identifier)
-            # Cache the metrics
-            RedisManager.set_user_metrics(user_identifier, metrics)
-            return metrics
-        except:
-            return {
-                "expression": "Detecting...",
-                "pitch": 0,
-                "confidence": 0
-            }
+        # Get live user metrics directly from evaluation session
+        metrics = evaluate_module.get_user_current_metrics(user_identifier)
+        return metrics
     except Exception as e:
+        print(f"Metrics endpoint error: {e}")
         return {
             "expression": "Detecting...",
             "pitch": 0,

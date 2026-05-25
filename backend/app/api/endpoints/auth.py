@@ -3,9 +3,9 @@ from datetime import timedelta
 from app.core.limiter import limiter
 from app.core.security import (
     authenticate_user, create_user, create_access_token, get_current_user,
-    get_current_user_optional, check_device_trial, get_user_trial_status
+    get_current_user_optional
 )
-from app.models.schemas import UserCreate, UserLogin, Token, TrialStatus, UserResponse, User
+from app.models.schemas import UserCreate, UserLogin, Token, UserResponse, User
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -58,22 +58,5 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
         full_name=current_user.full_name,
         is_active=current_user.is_active,
         is_premium=current_user.is_premium,
-        created_at=current_user.created_at.isoformat() if current_user.created_at else "",
-        trial_started_at=current_user.trial_started_at.isoformat() if current_user.trial_started_at else None,
-        trial_evaluations_used=current_user.trial_evaluations_used
+        created_at=current_user.created_at.isoformat() if current_user.created_at else ""
     )
-
-@router.get("/trial-status")
-async def get_trial_status(request: Request):
-    """Get trial status for device or user"""
-    try:
-        current_user = await get_current_user_optional(request)
-        
-        if current_user:
-            trial_status = get_user_trial_status(current_user)
-        else:
-            trial_status = check_device_trial(request)
-        
-        return trial_status
-    except Exception as e:
-        return TrialStatus(is_trial_active=False, trial_expired=True)

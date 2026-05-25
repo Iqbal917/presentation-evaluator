@@ -1,0 +1,8 @@
+# Ignore the main environment file
+.env
+
+# Ignore any variations (local, production, development)
+.env.*
+
+# Optional: Ignore your entire config or secrets folder if you have one
+# secrets/

@@ -23,7 +23,6 @@ def connect_to_mongo():
         
         # Create indexes
         database.users.create_index("email", unique=True)
-        database.device_trials.create_index("device_fingerprint", unique=True)
         
         return database
     except Exception as e:
