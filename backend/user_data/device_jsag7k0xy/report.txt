@@ -1,16 +1,16 @@
 📋 Presentation Evaluation Report
 ===================================
-Confidence Score: 84 / 100
+Confidence Score: 87 / 100
 Confidence Level: High Confidence
-Average Pitch: 91.03
+Average Pitch: 102.66
 
 Emotion Distribution:
  - Happy: 2
- - Neutral: 1
+ - Neutral: 2
  - Sad: 0
  - Fear: 0
  - Angry: 0
  - Surprise: 0
- - Confident: 1
- - Focused: 1
+ - Confident: 2
+ - Focused: 2
  - Engaged: 1

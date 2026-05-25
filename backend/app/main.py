@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -14,10 +15,22 @@ from app.services import evaluate_module
 # API Routers
 from app.api.endpoints import auth, evaluation, video, reporting, system
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Initializing databases...")
+    try:
+        connect_to_mongo()
+        evaluate_module.init_database()
+        print("Databases initialized successfully.")
+    except Exception as e:
+        print(f"Database initialization warning/error: {e}")
+    yield
+
 app = FastAPI(
     title="PresentAI Backend",
     description="Backend API for Presentation Evaluator with Multi-User Support",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan,
 )
 
 # Rate Limiter setup
@@ -42,15 +55,8 @@ os.makedirs("uploads", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/user_data", StaticFiles(directory="user_data"), name="user_data")
 
-# Include Routers
-app.include_router(auth.router)
-app.include_router(evaluation.router)
-app.include_router(video.router)
-app.include_router(reporting.router)
-app.include_router(system.router)
-
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     print("Initializing databases...")
     try:
         connect_to_mongo()
@@ -58,6 +64,14 @@ async def startup_event():
         print("Databases initialized successfully.")
     except Exception as e:
         print(f"Database initialization warning/error: {e}")
+    yield
+
+# Include Routers
+app.include_router(auth.router)
+app.include_router(evaluation.router)
+app.include_router(video.router)
+app.include_router(reporting.router)
+app.include_router(system.router)
 
 if __name__ == "__main__":
     import uvicorn
